@@ -1,5 +1,5 @@
 import React from 'react';
-import './productpage.css';
+import '../pages/ProductPage.css';
 
 export default function ProductPage() {
   // We no longer need local isLoggedIn state here as the Header is in the Layout
