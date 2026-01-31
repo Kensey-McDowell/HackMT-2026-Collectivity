@@ -1,15 +1,17 @@
 import { useState } from "react";
 import defaultAvatar from "../assets/images/Avatar_Photo.jpg";
+import { useSettings } from "../context/SettingsContext";
 
 export default function SettingsPage() {
   return (
-    <div className="min-h-screen p-6 bg-[var(--bg-color)] text-[var(--text-color)]">
-      <h1 className="text-3xl font-semibold mb-6">Settings Page</h1>
+    <div style={{ backgroundColor: "var(--bg-color)", color: "var(--text-color)", minHeight: "100vh", padding: "24px" }}>
+      <h1 style={{ fontSize: "32px", fontWeight: "600", marginBottom: "24px" }}>Settings Page</h1>
       <AccountSettings />
       <VisualSettings />
     </div>
   );
 }
+
 
 function AccountSettings() {
   const [option, setOption] = useState("");
@@ -18,29 +20,34 @@ function AccountSettings() {
   const [email, setEmail] = useState("");
   const [profilePic, setProfilePic] = useState(null);
 
-  const inputClasses =
-    "block mt-2 p-2 w-64 rounded bg-[var(--secondary-bg)] text-[var(--text-color)] border border-[var(--border-color)] shadow-sm";
+  const inputStyle = {
+    marginTop: "8px",
+    padding: "8px",
+    width: "256px",
+    borderRadius: "6px",
+    backgroundColor: "var(--secondary-bg)",
+    color: "var(--text-color)",
+    border: "1px solid var(--border-color)"
+  };
 
-  const buttonClasses =
-    "mt-3 px-4 py-2 rounded bg-[var(--accent-color)] text-[var(--bg-color)] font-medium hover:bg-[var(--hover-color)] transition";
-
-  const selectClasses =
-    "p-2 mb-4 rounded bg-[var(--secondary-bg)] text-[var(--text-color)] border border-[var(--border-color)]";
-
-  const handleChange = (field, value) => {
-    if (field === "profilePic") {
-      setProfilePic(value);
-    }
+  const buttonStyle = {
+    marginTop: "12px",
+    padding: "8px 16px",
+    borderRadius: "6px",
+    backgroundColor: "var(--accent-color)",
+    color: "var(--bg-color)",
+    fontWeight: "500",
+    cursor: "pointer"
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">Account Settings</h2>
+      <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px" }}>Account Settings</h2>
 
       <select
         value={option}
         onChange={(e) => setOption(e.target.value)}
-        className={selectClasses}
+        style={inputStyle}
       >
         <option value="">Select an Option</option>
         <option value="username">Change Username</option>
@@ -50,88 +57,104 @@ function AccountSettings() {
       </select>
 
       {option === "username" && (
-        <div className="mt-4">
-          <label className="block">New Username</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className={inputClasses}
-          />
-          <button className={buttonClasses}>Update Username</button>
+        <div style={{ marginTop: "16px" }}>
+          <label>New Username</label>
+          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} style={inputStyle} />
+          <button style={buttonStyle}>Update Username</button>
         </div>
       )}
 
       {option === "password" && (
-        <div className="mt-4">
-          <label className="block">New Password</label>
-          <input
-            type="text"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClasses}
-          />
-          <button className={buttonClasses}>Update Password</button>
+        <div style={{ marginTop: "16px" }}>
+          <label>New Password</label>
+          <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} />
+          <button style={buttonStyle}>Update Password</button>
         </div>
       )}
 
       {option === "email" && (
-        <div className="mt-4">
-          <label className="block">New Email</label>
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputClasses}
-          />
-          <button className={buttonClasses}>Update Email</button>
+        <div style={{ marginTop: "16px" }}>
+          <label>New Email</label>
+          <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+          <button style={buttonStyle}>Update Email</button>
         </div>
       )}
 
       {option === "profile" && (
-        <div className="mt-4">
-          <label className="block mb-2">New Profile Picture</label>
+        <div style={{ marginTop: "16px" }}>
+          <label>New Profile Picture</label>
 
-          <div className="w-24 h-24 rounded-full bg-[var(--secondary-bg)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden mb-3">
+          <div style={{
+            width: "96px",
+            height: "96px",
+            borderRadius: "50%",
+            backgroundColor: "var(--secondary-bg)",
+            border: "1px solid var(--border-color)",
+            overflow: "hidden",
+            marginBottom: "12px"
+          }}>
             <img
               src={profilePic ? URL.createObjectURL(profilePic) : defaultAvatar}
               alt="Profile Preview"
-              className="w-full h-full object-cover"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleChange("profilePic", e.target.files[0])}
-            className="block text-sm text-[var(--text-color)]
-              file:mr-4 file:py-2 file:px-4 file:rounded file:border-0
-              file:bg-[var(--accent-color)] file:text-[var(--bg-color)]
-              hover:file:bg-[var(--hover-color)]"
-          />
-
-          <button className={buttonClasses}>Update Profile Picture</button>
+          <input type="file" accept="image/*" onChange={(e) => setProfilePic(e.target.files[0])} />
+          <button style={buttonStyle}>Update Profile Picture</button>
         </div>
       )}
     </div>
   );
 }
 
+
 function VisualSettings() {
+  const { theme, setTheme, fontSize, setFontSize } = useSettings();
   const [option, setOption] = useState("");
+
+  const boxStyle = {
+    marginTop: "40px",
+    padding: "16px",
+    borderRadius: "8px",
+    backgroundColor: "var(--secondary-bg)",
+    color: "var(--text-color)"
+  };
+
+  const buttonStyle = {
+    marginRight: "8px",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    backgroundColor: "var(--accent-color)",
+    color: "var(--bg-color)",
+    cursor: "pointer"
+  };
+
   return (
-    <div className="p-4"> 
-    <h2 className="text-2xl font-semibold mb-4 text-[var(--text-primary)]">Visual Settings</h2> 
-  
-    <select value={option} 
-      onChange={(e) => setOption(e.target.value)} 
-      className="bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] p-2 rounded-md" 
-  > 
-    <option value="">Select Visual Option</option> 
-    <option value="theme">Change Theme</option> 
-    <option value="font">Change Font Size</option> 
-    <option value="layout">Change Layout</option>
-</select>
-   </div>
+    <div style={boxStyle}>
+      <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px" }}>Visual Settings</h2>
+
+      <select value={option} onChange={(e) => setOption(e.target.value)} style={{ padding: "8px", borderRadius: "6px" }}>
+        <option value="">Select Visual Option</option>
+        <option value="theme">Change Theme</option>
+        <option value="font">Change Font Size</option>
+      </select>
+
+      {option === "theme" && (
+        <div style={{ marginTop: "16px" }}>
+          <button style={buttonStyle} onClick={() => setTheme("light")}>Light</button>
+          <button style={buttonStyle} onClick={() => setTheme("dark")}>Dark</button>
+          <button style={buttonStyle} onClick={() => setTheme("system")}>System</button>
+        </div>
+      )}
+
+      {option === "font" && (
+        <div style={{ marginTop: "16px" }}>
+          <button style={buttonStyle} onClick={() => setFontSize("small")}>Small</button>
+          <button style={buttonStyle} onClick={() => setFontSize("medium")}>Medium</button>
+          <button style={buttonStyle} onClick={() => setFontSize("large")}>Large</button>
+        </div>
+      )}
+    </div>
   );
 }
