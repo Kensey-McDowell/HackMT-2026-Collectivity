@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // 1. Import the hook
+
 import { printAllCollectibles } from '../js/testTransaction.js';
 import './productpage.css';
+import { ID_TO_STR } from '../js/tags'; // Import your mapping
 
 export default function ProductPage() {
+  const navigate = useNavigate(); // <-- ADD THIS LINE
+
   const { itemIndex } = useParams();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Define missing variables to prevent crash
+
+    const handleTagClick = (tagLabel) => {
+       navigate('/social', { state: { filterTag: tagLabel } });
+  };
+
+
   const isLoggedIn = true; 
   const user = { username: "AUTHENTICATED_USER" };
 
@@ -48,8 +59,6 @@ export default function ProductPage() {
     );
   }
 
-  // Helper for properties that might be missing from blockchain
-  const displayImg = `https://placehold.co/600x600/111/c5a367?text=${product.collectible_name}`;
   return (
     <>
       <div className="product-container">
@@ -106,9 +115,22 @@ export default function ProductPage() {
               <div className="meta-stack text-right items-end">
                 <span className="label-gold">Tags</span>
                 <div className="tag-cloud-inline">
-                  {['#Handcrafted', '#Marble', '#Unique'].map(tag => (
-                    <button key={tag} className="tag-item transform transition-transform duration-300 ease-out hover:scale-110 active:scale-95">{tag}</button>
-                  ))}
+                  {/* Dynamic Mapping from Blockchain Integer to Enum String */}
+                  {[product.tag].flat().map((tagId, index) => {
+                    // Prevent rendering if the tag data is missing
+                    if (tagId === undefined || tagId === null) return null;
+
+                    return (
+                     <button 
+                        key={index} 
+                        onClick={() => handleTagClick(ID_TO_STR[tagId])}
+                        className="tag-item transform transition-transform duration-300 hover:scale-110"
+                      >
+                        {ID_TO_STR[tagId] || `#Item_${tagId}`}
+                      </button>
+                      
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -117,7 +139,7 @@ export default function ProductPage() {
           <div className="description-box">
             <span className="label-gold block mb-2">Item Description</span>
             <p className="description-text">
-              temp temp
+              {product.description || "No description provided for this asset."}
             </p>
           </div>
 
