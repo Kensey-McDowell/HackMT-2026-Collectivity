@@ -3,7 +3,11 @@ import './about.css';
 
 export default function AboutPage() {
   return (
+    
+
     <div className="about-container">
+
+
       {/* Jump links */}
       <div className="about-jump-links">
         <a href="#mission">Mission</a>
@@ -15,6 +19,18 @@ export default function AboutPage() {
       <div className="about-slide-up-text">About Collectibles</div>
 
       <h1>About Us</h1>
+
+    {/* People Slideshow */}
+    <div className="about-people-container">
+      <div className="slider-window">
+        <div className="image-track">
+        <div className="slide-item"><img src="image1.jpg" alt="1" /></div>
+        <div className="slide-item"><img src="image2.jpg" alt="2" /></div>
+        <div className="slide-item"><img src="image3.jpg" alt="3" /></div>
+        <div className="slide-item"><img src="image4.jpg" alt="4" /></div>
+      </div>
+    </div>
+    </div>
 
       <div className="about-card" id="mission">
         <h2>Our Mission</h2>

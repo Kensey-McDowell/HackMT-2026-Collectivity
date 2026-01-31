@@ -10,6 +10,7 @@
   --digital-accent: rgba(197, 163, 103, 0.2);
 }
 
+
 /* Global font and smooth scrolling */
 .about-body {
   background-color: var(--bg-color);
@@ -75,6 +76,10 @@
     transform: translateY(0);
   }
 }
+/* About People Card */
+.about-people-container {
+  
+}
 
 /* About Us heading */
 .about-container h1 {
@@ -97,6 +102,7 @@
 
 /* Card styling */
 .about-card {
+  color: var(--text-color);
   background-color: var(--secondary-bg);
   padding: 30px;
   border-radius: 12px;
