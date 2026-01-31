@@ -86,27 +86,28 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* COLLECTIBLES SECTION */}
-        <div className="mt-12">
-          <header className="flex items-center gap-6 text-[11px] font-medium tracking-[0.5em] text-[var(--border-color)] mb-10 uppercase">
-            <span className="italic">Collectibles</span>
-            <div className="h-[1px] flex-1 bg-[var(--secondary-bg)]"></div>
-          </header>
-          
-         {/* THE GRID CONTAINER */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 
+        
+                  {/* COLLECTIBLES SECTION */}
+          <div className="mt-12">
+            <header className="flex items-center gap-6 text-[11px] font-medium tracking-[0.5em] text-[var(--border-color)] mb-10 uppercase">
+              <span className="italic">Collectibles</span>
+              <div className="h-[1px] flex-1 bg-[var(--secondary-bg)]"></div>
+            </header>
+            
+            {/* THE GRID CONTAINER */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 
                             gap-4 md:gap-8 
-                            p-6 md:p-10        
-                            bg-[var(--secondary-bg)]/30   {/* The /50 sets background opacity to 50% */}
+                            p-6 md:p-10    
+                            /* Removed the extra solid background line */
+                            bg-[var(--secondary-bg)]/30 
                             backdrop-blur-sm           
-                            bg-[var(--secondary-bg)] 
-                            border border-[var(--border-color)] 
+                            border border-[var(--border-color)]/40 
                             rounded-md shadow-inner">     
                 {items.map((item) => (
                     <CollectibleCard key={item.id} item={item} />
                 ))}
             </div>
-        </div>
+          </div>
       </div>
     </div>
   );
