@@ -11,24 +11,69 @@ import RegistrationPage from "./pages/registration.jsx";
 import SocialPage from "./pages/social.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 
+// ClickSpark import for the click sparkle animation
+import ClickSpark from "./components/ClickSpark";
+
 export default function App() {
+  // Define the theme accent color here so we can pass it properly to ClickSpark
+  const accentColor = "#c5a367"; // Matches your --accent-color CSS variable
+
   return (
     <Router>
       <Routes>
-        {/* --- GROUP 1: PAGES WITHOUT HEADER --- */}
+        {/* --- GROUP 1: PAGES WITHOUT GLOBAL HEADER --- */}
         <Route path="/intro" element={<IntroPage />} />
         <Route path="/registration" element={<RegistrationPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
 
         {/* --- GROUP 2: PAGES WITH GLOBAL HEADER --- */}
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+
+          {/* Wrapped pages with ClickSpark for interactive spark effect */}
+          <Route
+            path="/about"
+            element={
+              <ClickSpark sparkColor={accentColor}>
+                <AboutPage />
+              </ClickSpark>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ClickSpark sparkColor={accentColor}>
+                <ProfilePage />
+              </ClickSpark>
+            }
+          />
+          <Route
+            path="/social"
+            element={
+              <ClickSpark sparkColor={accentColor}>
+                <SocialPage />
+              </ClickSpark>
+            }
+          />
+          <Route
+            path="/faq"
+            element={
+              <ClickSpark sparkColor={accentColor}>
+                <FAQPage />
+              </ClickSpark>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ClickSpark sparkColor={accentColor}>
+                <SettingsPage />
+              </ClickSpark>
+            }
+          />
+
+          {/* Pages without ClickSpark effect */}
           <Route path="/admin" element={<AdminPage />} />
-          <Route path="/faq" element={<FAQPage />} />
-          <Route path="/social" element={<SocialPage />} />
           <Route path="/productpage" element={<ProductPage />} />
         </Route>
       </Routes>
