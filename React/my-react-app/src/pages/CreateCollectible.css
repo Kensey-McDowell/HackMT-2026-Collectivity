@@ -1,23 +1,57 @@
-/* Reuse the structure from ProductPage.css but add input-specific tweaks */
-.product-container {
+/* Crucial: Lock the Layout Wrapper */
+.social-dashboard-wrapper {
+  height: 100vh;
   display: flex;
-  flex: 1;
-  padding: 1.5rem 4rem 2rem 4rem;
-  gap: 4rem;
-  overflow: hidden;
-  align-items: stretch;
+  flex-direction: column;
+  overflow: hidden; /* Prevents the main body from scrolling */
 }
 
-.label-gold {
-  color: #c5a367; /* Matches --accent-color */
-  font-size: 0.7rem;
-  font-weight: 900;
+.social-main-nav {
+  height: 80px; /* Explicit height to help calculation */
+  flex-shrink: 0;
+}
+
+.social-main-content-area {
+  flex-grow: 1; /* Takes the remaining space */
+  overflow: hidden; /* Prevents this container from expanding beyond viewport */
+  position: relative;
+}
+
+/* Specific product container fixes */
+.product-container {
+  height: 100%; /* Fill the main-content-area exactly */
+}
+
+/* Ensure sub-sections don't collapse */
+.min-h-0 {
+  min-height: 0;
+}
+.vault-search-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  color: white;
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.1em;
+  outline: none;
+  transition: all 0.3s ease;
+  border-radius: 2px;
 }
 
-/* Make textareas and inputs look like part of the design, not "forms" */
-textarea::placeholder, input::placeholder {
-  color: var(--text-color);
-  opacity: 0.3;
+.vault-search-input:focus {
+  border-color: var(--accent-color);
+  background: rgba(197, 163, 103, 0.05);
+}
+
+.vault-search-input::placeholder {
+  color: white;
+  opacity: 0.2;
+}
+
+/* Ensure the scroll box remains the flexible part of the container */
+.vault-scroll-box {
+  flex: 1;
+  min-height: 0;
 }
