@@ -1,66 +1,145 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import '../pages/social.css'; 
+import pb from '../lib/pocketbase';
+import '../pages/social.css';
+import '../pages/accountDropdown.css';
 
 export default function Layout() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
-  // Define paths where the "Back" button should NOT show (e.g., the main feed)
-  const isMainPage = location.pathname === '/' || location.pathname === '/social';
+  const [open, setOpen] = useState(false);
+
+  // 🔐 Auth state
+  const isLoggedIn = pb.authStore.isValid;
+  const user = pb.authStore.model;
+
+  const isMainPage =
+    location.pathname === '/' || location.pathname === '/social';
+
+  const handleLogout = () => {
+    pb.authStore.clear();
+    setOpen(false);
+    navigate('/');
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const avatarUrl = user
+    ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
+    : '';
 
   return (
     <div className="social-dashboard-wrapper">
-      
-      {/* --- GLOBAL TOP NAVIGATION --- */}
+      {/* --- TOP NAV --- */}
       <nav className="social-main-nav">
-        
-        {/* LEFT SLOT: Contextual Back Button */}
+
+        {/* LEFT */}
         <div className="w-1/3 flex items-center">
-          {!isMainPage ? (
-            <button 
-              onClick={() => navigate(-1)} 
+          {!isMainPage && (
+            <button
+              onClick={() => navigate(-1)}
               className="flex items-center text-[var(--accent-color)] uppercase tracking-[0.3em] text-[10px] font-bold group bg-transparent border-none cursor-pointer"
             >
-              <span className="text-lg mr-2 transition-transform group-hover:-translate-x-1">←</span>
-              <span>Back</span>
+              <span className="text-lg mr-2 group-hover:-translate-x-1 transition-transform">
+                ←
+              </span>
+              Back
             </button>
-          ) : (
-            <div className="invisible lg:visible" />
           )}
         </div>
-        
+
+        {/* CENTER */}
         <div className="w-1/3 text-center">
           <h1 className="social-platform-logo">COLLECTIVITY</h1>
         </div>
 
-        <div className="w-1/3 flex justify-end items-center">
-          {isLoggedIn ? (
-            <div className="flex items-center gap-4 group cursor-pointer">
-              <span className="text-sm font-bold tracking-widest uppercase text-[var(--text-color)] group-hover:text-[var(--accent-color)] transition-colors">
-                Alex Rivera
-              </span>
-              <div className="w-12 h-12 rounded-full border-2 border-[var(--border-color)] overflow-hidden shrink-0 transition-all group-hover:border-[var(--accent-color)]">
-                <img 
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" 
-                  alt="Profile" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          ) : (
-            <Link 
-              to="/registration" 
+        {/* RIGHT */}
+        <div className="w-1/3 flex justify-end items-center relative">
+          {!isLoggedIn ? (
+            <Link
+              to="/registration"
               className="px-10 py-3 border border-[var(--accent-color)] text-[var(--accent-color)] text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--accent-color)] hover:text-[var(--bg-color)] transition-all rounded-sm"
             >
               Sign In
             </Link>
+          ) : (
+            <div ref={dropdownRef} className="relative">
+              {/* PROFILE BUTTON */}
+              <button
+                onClick={() => setOpen(!open)}
+                className="flex items-center gap-3 cursor-pointer group"
+                type="button"
+              >
+                <span className="text-sm font-bold tracking-widest uppercase text-[var(--text-color)] group-hover:text-[var(--accent-color)] transition-colors">
+                  {user.username}
+                </span>
+
+                <div className="w-11 h-11 rounded-full border-2 border-[var(--border-color)] overflow-hidden transition-all group-hover:border-[var(--accent-color)]">
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </button>
+
+              {/* HOVER GLIDER DROPDOWN */}
+              {open && (
+                <div className="absolute right-0 mt-4 z-50">
+                  <div className="account-menu">
+                    <button
+                      className="account-item"
+                      onClick={() => {
+                        setOpen(false);
+                        navigate('/account');
+                      }}
+                      type="button"
+                    >
+                      Account
+                    </button>
+
+                    <button
+                      className="account-item"
+                      onClick={() => {
+                        setOpen(false);
+                        navigate('/settings');
+                      }}
+                      type="button"
+                    >
+                      Settings
+                    </button>
+
+                    <button
+                      className="account-item account-item-logout"
+                      onClick={handleLogout}
+                      type="button"
+                    >
+                      Logout
+                    </button>
+
+                    <div className="glider-container">
+                      <div className="glider" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </nav>
 
-      {/* --- CONTENT AREA --- */}
+      {/* --- PAGE CONTENT --- */}
       <div className="social-main-content-area">
         <Outlet />
       </div>
