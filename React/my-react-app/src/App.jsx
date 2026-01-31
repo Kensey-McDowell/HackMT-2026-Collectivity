@@ -10,6 +10,7 @@ import FAQPage from "./pages/FAQ.jsx";
 import RegistrationPage from "./pages/registration.jsx";
 import SocialPage from "./pages/social.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
+import CreateCollectible from "./pages/CreateCollectible.jsx";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/social" element={<SocialPage />} />
           <Route path="/productpage" element={<ProductPage />} />
+          <Route path="/create" element={<CreateCollectible />} />
         </Route>
       </Routes>
     </Router>
