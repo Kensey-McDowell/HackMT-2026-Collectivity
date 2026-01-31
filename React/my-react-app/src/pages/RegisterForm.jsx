@@ -5,8 +5,6 @@ export default function RegisterForm({ onSwitch }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    institution: "",
-    institution_id: "",
     password: "",
     confirmPassword: ""
   });
@@ -36,8 +34,7 @@ export default function RegisterForm({ onSwitch }) {
         password: form.password,
         passwordConfirm: form.confirmPassword,
         name: form.name,
-        institution: form.institution,
-        institution_id: form.institution_id
+  
       });
 
       // 2️⃣ Auto-login after signup
