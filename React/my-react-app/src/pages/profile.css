@@ -1,0 +1,13 @@
+:root {
+   /* Base Theme */
+  --bg-color: #0a0908;
+  --text-color: #f4ece1;
+  --accent-color: #c5a367;
+  --secondary-accent: #d9cbb3;
+  --secondary-bg: #2f2b28;
+  --hover-color: #cfc6b8;
+  --border-color: #6e6458;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+@import "tailwindcss";
