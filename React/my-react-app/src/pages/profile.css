@@ -1,3 +1,4 @@
+
 :root {
    /* Base Theme */
   --bg-color: #0a0908;
@@ -9,5 +10,6 @@
   --border-color: #6e6458;
   --shadow-color: rgba(0, 0, 0, 0.3);
 }
+
 
 @import "tailwindcss";

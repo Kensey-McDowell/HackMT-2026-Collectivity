@@ -1,75 +1,94 @@
-/* From Uiverse.io by Creatlydev */ 
+/* collectible.css */
+:root {
+  --bg-color: #0a0908;
+  --text-color: #f4ece1;
+  --accent-color: #c5a367;
+  --secondary-accent: #d9cbb3;
+  --secondary-bg: #2f2b28;
+  --hover-color: #cfc6b8;
+  --border-color: #6e6458;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* THE BOX CARD */
 .card {
-  margin: auto;
-  width: min(300px, 100%);
-  background-color: #fefefe;
-  border-radius: 1rem;
-  padding: 0.5rem;
-  color: #141417;
-}
-.card__hero {
-  background-color: #fef4e2;
-  border-radius: 0.5rem 0.5rem 0 0;
-  padding: 1.5rem;
-  font-size: 0.875rem;
-}
-.card__hero .card__job-title {
-  margin: 2rem 0;
-  font-size: 2rem;
-  font-weight: 600;
-  padding-right: 2rem;
-}
-.card__hero-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 1rem;
-  font-weight: 700;
-}
-.card__footer {
-  display: flex;
-  justify-content: flex-start;
-  align-items: start;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  padding: 0.75rem;
-  row-gap: 1rem;
-  font-weight: 700;
-  font-size: 0.875rem;
-}
-@media (min-width: 340px) {
-  .card__footer {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-}
-.card__job-summary {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 0.75rem;
-}
-.card__btn {
   width: 100%;
-  font-weight: 400;
-  border: none;
-  display: block;
+  aspect-ratio: 1 / 1; /* Forces the box shape */
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  text-align: center;
-  padding: 0.5rem 1.25rem;
-  border-radius: 1rem;
-  background-color: #141417;
-  color: #fff;
-  font-size: 1rem;
 }
-@media (min-width: 340px) {
-  .card__btn {
-    width: max-content;
-  }
+
+.card:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px var(--shadow-color);
+}
+
+.card__hero {
+  flex: 1;
+  width: 100%;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.card__hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.card:hover .card__hero img {
+  transform: scale(1.1);
+}
+
+.card__footer {
+  padding: 10px 4px 4px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--secondary-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card__collection {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--border-color);
+  font-weight: 700;
+}
+
+.card__type-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: var(--bg-color);
+  color: var(--accent-color);
+  font-size: 7px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
+  z-index: 10;
+  text-transform: uppercase;
 }
