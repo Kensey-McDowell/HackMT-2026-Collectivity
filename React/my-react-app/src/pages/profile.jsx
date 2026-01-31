@@ -1,42 +1,41 @@
-import { useState, useEffect } from "react";
-import './profile.css';
-import CollectibleCard from '../components/collectibleCard';
+import React, { useState, useEffect } from "react";
 import { printAllCollectibles } from '../js/testTransaction.js';
-import pb from '../lib/pocketbase';
-
-const PLACEHOLDER_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuQupw8P5ewX8dxMamX8Yit1r8M9nMZ8EZ9g&s';
-const PLACEHOLDER_BANNER = 'https://i.etsystatic.com/34466454/r/il/5e9775/4175504808/il_fullxfull.4175504808_bdhn.jpg';
+import CollectibleCard from '../components/collectibleCard'; 
+import './profile.css'; 
 
 export default function ProfilePage() {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const user = pb.authStore.model;
-  const isOwnProfile = !!user;
+
+  
+  const user = {
+    username: "joe",
+    profileImageUrl: "https://placehold.co/400x400/111/c5a367?text=AV",
+    profileBannerUrl: "https://i.etsystatic.com/34466454/r/il/5e9775/4175504808/il_fullxfull.4175504808_bdhn.jpg",
+    address: "0x71C...8001" 
+  };
+
+  const isOwnProfile = true; // Hardcoded for now
 
   useEffect(() => {
-    async function loadCollectibles() {
+    async function loadUserInventory() {
       try {
         setIsLoading(true);
-        const raw = await printAllCollectibles();
-        const normalized = (raw || []).map((c) => ({
-          ...c,
-          imageUrl: c.imageUrl || 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=800',
-          collectionName: c.collectionName ?? 'On-chain',
-          tags: c.tags ?? (c.tag != null ? [String(c.tag)] : []),
-          collectable: c.collectable ?? c.collectible_name,
-        }));
-        setItems(normalized);
-      } catch (err) {
-        console.error('Failed to load collectibles:', err);
-        setItems([]);
+        const allItems = await printAllCollectibles();
+        
+        // FILTER: Only show items where the current user is the 'ownership' address
+        // Note: For testing, you might want to show allItems until you have real wallet logic
+        setItems(allItems || []); 
+      } catch (error) {
+        console.error("Failed to load inventory:", error);
       } finally {
         setIsLoading(false);
       }
     }
-    loadCollectibles();
+    loadUserInventory();
   }, []);
 
-  const pageStyle = {
+  const pageStyle = { 
     fontFamily: "'Playfair Display', serif",
     backgroundColor: "var(--bg-color)",
     color: "var(--text-color)"
@@ -44,8 +43,8 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div style={pageStyle} className="min-h-screen p-4 md:p-8 antialiased flex items-center justify-center">
-        <p className="text-[var(--text-color)] opacity-80">Loading collectibles…</p>
+      <div style={pageStyle} className="min-h-screen flex items-center justify-center uppercase tracking-[0.5em]">
+        Retrieving Personal Ledger...
       </div>
     );
   }
@@ -56,22 +55,23 @@ export default function ProfilePage() {
         
         {/* HEADER SECTION */}
         <div 
-          className="flex flex-col md:flex-row items-center md:items-end gap-8 mb-16 bg-cover bg-center bg-no-repeat p-6 rounded-md shadow-[0_10px_30px_var(--shadow-color)] border border-[var(--border-color)]"
-          style={{
-            backgroundImage: `linear-gradient(to top, var(--bg-color) 0%, rgba(10, 9, 8, 0.4) 30%), url(${user?.profileBannerUrl || user?.banner || PLACEHOLDER_BANNER})`
+          className="flex flex-col md:flex-row items-center md:items-end gap-8 mb-16 bg-cover bg-center bg-no-repeat p-10 rounded-md shadow-[0_10px_30px_var(--shadow-color)] border border-[var(--border-color)]"
+          style={{ 
+            backgroundImage: `linear-gradient(to top, var(--bg-color) 0%, rgba(10, 9, 8, 0.4) 30%), url(${user.profileBannerUrl})` 
           }} 
         >
           <div className="relative">
-            <img
-              src={user?.profileImageUrl || (user?.avatar ? pb.files.getUrl(user, user.avatar) : null) || PLACEHOLDER_AVATAR}
-              alt="Profile"
-              className="w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-[var(--border-color)] object-cover shadow-[0_10px_30px_var(--shadow-color)]"
+            <img 
+              src={user.profileImageUrl}
+              alt="Profile" 
+              className="w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-[var(--accent-color)] object-cover shadow-[0_10px_30px_var(--shadow-color)]" 
             />
           </div>
           
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-5xl md:text-6xl font-medium italic tracking-tight mb-4 text-[var(--text-color)] drop-shadow-lg">
-              {user?.username ?? user?.name ?? 'Profile'}
+            <span className="text-[10px] uppercase tracking-[0.4em] opacity-50 block mb-2">Authenticated Collector</span>
+            <h1 className="text-5xl md:text-6xl font-medium italic tracking-tight mb-6 text-[var(--text-color)] drop-shadow-lg">
+              {user.username}
             </h1>
             
             <div className="flex justify-center md:justify-start gap-4">
@@ -81,7 +81,7 @@ export default function ProfilePage() {
                     Edit Profile
                   </button>
                   <button className="px-7 py-2 rounded-sm border border-[var(--border-color)] text-[var(--text-color)] text-[11px] font-bold uppercase tracking-widest hover:bg-[var(--secondary-bg)] transition-all duration-300">
-                    Import
+                    Import Asset
                   </button>
                 </>
               ) : (
@@ -96,22 +96,30 @@ export default function ProfilePage() {
         {/* COLLECTIBLES SECTION */}
         <div className="mt-12">
           <header className="flex items-center gap-6 text-[11px] font-medium tracking-[0.5em] text-[var(--text-color)] mb-10 uppercase opacity-80">
-            <span className="italic">Collectibles</span>
+            <span className="italic">Collection Inventory</span>
             <div className="h-[1px] flex-1 bg-[var(--border-color)]/20"></div>
+            <span className="opacity-40">{items.length} Assets</span>
           </header>
           
-          {/* THE GRID CONTAINER (The "Tray") */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 
-                          gap-4 md:gap-8 
-                          p-6 md:p-10    
-                          bg-[var(--secondary-bg)]/30
-                          backdrop-blur-sm           
-                          border border-[var(--border-color)]/50 
-                          rounded-md shadow-inner">     
-              {items.map((item, index) => (
-                <CollectibleCard key={item.index ?? item.id ?? index} item={item} />
-              ))}
-          </div>
+          {/* THE GRID CONTAINER */}
+          {items.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 
+                            gap-4 md:gap-8 
+                            p-6 md:p-10     
+                            bg-[var(--secondary-bg)]/30
+                            backdrop-blur-sm           
+                            border border-[var(--border-color)]/50 
+                            rounded-md shadow-inner">     
+                {items.map((item) => (
+                    /* Note: Ensure unique_ID is used as the key for blockchain items */
+                    <CollectibleCard key={item.unique_ID} item={item} />
+                ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 border border-dashed border-[var(--border-color)] opacity-40">
+              <p className="uppercase tracking-widest text-xs">No assets found in this ledger.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

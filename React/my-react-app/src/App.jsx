@@ -13,7 +13,6 @@ import FAQPage from "./pages/FAQ.jsx";
 import RegistrationPage from "./pages/registration.jsx";
 import SocialPage from "./pages/social.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
-import CreateCollectible from "./pages/CreateCollectible.jsx";
 
 function ThemedApp() {
   const { theme, fontSize } = useSettings();
