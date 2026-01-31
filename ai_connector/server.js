@@ -24,7 +24,20 @@ app.post("/chat", async(req, res) => {
             return res.status(400).json({ error: "sessionId and message are required..." });
         }
 
-        //More will be added here...
+        const history = getSession(sessionId);
+        const prompt = buildPrompt(message);
+
+        const response = await agent.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: [
+                { role: "user", parts: [{ text: SYS_POLICY }] },
+                ...history.map(h => ({ role: h.role, parts: [{ text: h.content }] })),
+                { role: "user", parts: [{ text: prompt }] }
+            ],
+
+        });
+
+        //Start here with let text = ...
 
     //If an error occurs during execution, report the error.
     } catch (err) {
