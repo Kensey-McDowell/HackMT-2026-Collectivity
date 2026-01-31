@@ -1,0 +1,186 @@
+/* Theme variables */
+:root {
+  --bg-color: #0a0908;
+  --text-color: #f4ece1;
+  --accent-color: #c5a367;
+  --secondary-bg: #1f1c1a;
+  --hover-color: #cfc6b8;
+  --border-color: #6e6458;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --digital-accent: rgba(197, 163, 103, 0.2);
+}
+
+/* Global font and smooth scrolling */
+.about-body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+
+/* Main about container */
+.about-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;         
+  padding: 80px 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  gap: 60px;                   
+}
+
+/* Sliding "About Collectibles" */
+.about-slide-up-text {
+  align-self: flex-end;        
+  font-size: 4rem;
+  font-weight: 900;
+  color: var(--accent-color);
+  text-shadow: 0 0 12px var(--digital-accent);
+  opacity: 0;
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+/* Jump links aligned with heading */
+.about-jump-links {
+  position: absolute;
+  top: 140px;                 
+  left: 100px;                
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.about-jump-links a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.about-jump-links a:hover {
+  color: var(--hover-color);
+}
+
+/* Slide-up animation */
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* About Us heading */
+.about-container h1 {
+  align-self: flex-start;     
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+/* Cards container */
+.about-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;                   
+  width: 100%;
+  align-items: center;         
+}
+
+/* Card styling */
+.about-card {
+  background-color: var(--secondary-bg);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px var(--digital-accent);
+  max-width: 800px;
+  width: 100%;
+  opacity: 0;
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+/* Staggered card animations */
+.about-card:nth-child(1) { animation-delay: 0.2s; }
+.about-card:nth-child(2) { animation-delay: 0.4s; }
+.about-card:nth-child(3) { animation-delay: 0.6s; }
+
+/* Card text readability */
+.about-card p {
+  line-height: 1.6;
+}
+
+/* Buttons */
+.about-button {
+  background-color: var(--accent-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 14px 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  box-shadow: 0 2px 12px var(--digital-accent);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.about-button:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-2px);
+}
+
+/* Responsive design */
+
+/* Medium screens */
+@media (max-width: 1024px) {
+  .about-container {
+    padding: 60px 60px;
+  }
+  .about-slide-up-text {
+    font-size: 3.5rem;
+  }
+  .about-jump-links {
+    left: 80px;
+    top: 120px;
+  }
+  .about-container h1 {
+    font-size: 3rem;
+  }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .about-container {
+    padding: 40px 30px;
+  }
+  .about-slide-up-text {
+    align-self: flex-start;
+    font-size: 2.5rem;
+  }
+  .about-jump-links {
+    display: none;
+  }
+  .about-container h1 {
+    font-size: 2.5rem;
+  }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  .about-container {
+    padding: 30px 20px;
+  }
+  .about-slide-up-text {
+    font-size: 2rem;
+  }
+  .about-container h1 {
+    font-size: 2rem;
+  }
+}
