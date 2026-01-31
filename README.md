@@ -1,6 +1,7 @@
 🔀 Git Workflow (Team Standard)
 Always pull latest changes before starting work:
 ```
+git fetch
 git checkout main
 git pull origin main
 ```
