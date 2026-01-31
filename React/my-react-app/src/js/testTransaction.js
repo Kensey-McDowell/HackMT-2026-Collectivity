@@ -1,8 +1,9 @@
 import { ethers } from 'ethers';
+import 'dotenv/config';
 
-const CONTRACT_ADDRESS = "0x5E7faCe4C4ed385430b28cf09C4842D9554358BE";
-const PRIVATE_KEY = "153ee90b858dbaf4808eb624dda75fdfde55d15b38db5d51eeae62062136488e";
-const SEPOLIA_RPC = 'https://ethereum-sepolia.publicnode.com';
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const SEPOLIA_RPC = process.env.SEPOLIA_RPC;
 const ABI = [
     
 	{
