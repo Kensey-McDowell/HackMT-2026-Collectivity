@@ -1,100 +1,107 @@
-import React from 'react';
-import '../pages/ProductPage.css';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { printAllCollectibles } from '../js/testTransaction.js';
+import './productpage.css';
 
 export default function ProductPage() {
-  // We no longer need local isLoggedIn state here as the Header is in the Layout
-  
+  const { itemIndex } = useParams();
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    async function loadProduct() {
+      setIsLoading(true);
+
+      const allItems = await printAllCollectibles();
+
+      const foundProduct = allItems.find(
+        i => String(i.Index).toLowerCase() === String(itemIndex).toLowerCase()
+      );
+
+      setProduct(foundProduct || null);
+      setIsLoading(false);
+    }
+
+    loadProduct();
+  }, [itemIndex]);
+
+  if (isLoading) {
+    return <div className="loading-screen">Accessing Smart Contract...</div>;
+  }
+
+  if (!product) {
+    return (
+      <div className="product-viewport flex flex-col items-center justify-center h-screen">
+        <h1 className="text-3xl mb-4">Asset Not Found</h1>
+        <p className="mb-8 opacity-60">
+          The ID "{itemIndex}" does not match any items in our records.
+        </p>
+        <Link to="/" className="sign-in-btn">
+          Return to Gallery
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <>
+    <div className="product-viewport font-sans">
+      {/* NAV */}
+      <nav className="main-nav">
+        <div className="w-1/3">
+          <Link to="/" className="back-link">
+            ← Back
+          </Link>
+        </div>
+        <div className="w-1/3 text-center">
+          <h1 className="platform-logo">COLLECTIVITY</h1>
+        </div>
+        <div className="w-1/3" />
+      </nav>
+
+      {/* PRODUCT BODY */}
       <div className="product-container">
-        {/* LEFT PANEL: Visuals & Technicals */}
+        {/* LEFT PANEL */}
         <aside className="panel-visuals">
-          <div className="visuals-top-stack">
-            <div className="hero-image-aligned">
-              <div className="flex items-center justify-center h-full w-full uppercase tracking-[0.5em] text-[var(--border-color)] font-bold text-[10px]">
-                Asset View
-              </div>
-            </div>
-            <div className="thumb-scroller-aligned">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="thumb-box-aligned flex items-center justify-center uppercase text-[10px] tracking-widest text-[var(--border-color)]">
-                  Pic
-                </div>
-              ))}
-            </div>
+          <div className="hero-image-aligned">
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
           </div>
 
           <div className="info-technical-grid">
             <div className="tech-row">
-              <div className="flex flex-col">
-                <span className="label-gold-dim">Current Owner</span>
-                <span className="tech-value">Alex Rivera</span>
+              <div>
+                <span className="label-gold-dim">Collection</span>
+                <span className="tech-value">{product.collectionName}</span>
               </div>
-              <div className="flex flex-col text-right">
-                <span className="label-gold-dim">Asset Status</span>
-                <span className="tech-value text-green-400">Available For Sale</span>
-              </div>
-            </div>
-            <div className="tech-row border-b-0">
-              <div className="flex flex-col">
-                <span className="label-gold-dim">Physical Location</span>
-                <span className="tech-value">London Gallery</span>
-              </div>
-              <div className="flex flex-col text-right">
-                <span className="label-gold-dim">Market Value</span>
-                <span className="tech-value text-[var(--accent-color)] font-bold">£12,400.00</span>
+              <div className="text-right">
+                <span className="label-gold-dim">Status</span>
+                <span className="tech-value">{product.status}</span>
               </div>
             </div>
           </div>
         </aside>
 
-        {/* RIGHT PANEL: Info & History */}
+        {/* RIGHT PANEL */}
         <main className="panel-info">
-          <header className="product-header">
-            <h2 className="product-title">Obsidian Shard</h2>
-            <div className="header-meta-row">
-              <div className="meta-stack">
-                <span className="label-gold">Category</span>
-                <span className="category-text">Physical Sculpture</span>
-              </div>
-              <div className="meta-stack text-right items-end">
-                <span className="label-gold">Tags</span>
-                <div className="tag-cloud-inline">
-                  {['#Handcrafted', '#Marble', '#Unique'].map(tag => (
-                    <span key={tag} className="tag-item">{tag}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </header>
+          <h2 className="product-title">{product.collectible_name}</h2>
 
           <div className="description-box">
-            <span className="label-gold block mb-2">Item Description</span>
-            <p className="description-text">
-              Hand-carved from rare obsidian deposits, this piece represents a physical anchor to the digital world. 
-              The surface features a naturally occurring matte finish that absorbs light, creating a void-like effect.
+            <p>
+              The {product.name} is a {product.type} from the{' '}
+              {product.collectionName} collection.
             </p>
           </div>
 
-          <div className="history-section">
-            <span className="label-gold mb-4 block">Transaction History</span>
-            <div className="history-scroll-container">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div key={item} className="history-row">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Sale & Transfer</span>
-                    <span className="text-[10px] opacity-40 font-mono">0x71C...8241</span>
-                  </div>
-                  <div className="text-right flex flex-col gap-1">
-                    <span className="block text-sm text-[var(--accent-color)] font-bold">£11,200.00</span>
-                    <span className="text-[10px] opacity-40">24 OCT 2025</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <button className="w-full mt-8 py-4 bg-[var(--accent-color)]">
+            Initiate Acquisition
+          </button>
         </main>
       </div>
-    </>
+    </div>
   );
 }
