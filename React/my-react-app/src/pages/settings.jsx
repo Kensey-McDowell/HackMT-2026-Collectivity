@@ -5,13 +5,11 @@ import { useSettings } from "../context/SettingsContext";
 export default function SettingsPage() {
   return (
     <div style={{ backgroundColor: "var(--bg-color)", color: "var(--text-color)", minHeight: "100vh", padding: "24px" }}>
-      <h1 style={{ fontSize: "32px", fontWeight: "600", marginBottom: "24px" }}>Settings Page</h1>
       <AccountSettings />
       <VisualSettings />
     </div>
   );
 }
-
 
 function AccountSettings() {
   const [option, setOption] = useState("");
