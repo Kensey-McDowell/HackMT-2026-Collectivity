@@ -1,0 +1,23 @@
+/* Reuse the structure from ProductPage.css but add input-specific tweaks */
+.product-container {
+  display: flex;
+  flex: 1;
+  padding: 1.5rem 4rem 2rem 4rem;
+  gap: 4rem;
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.label-gold {
+  color: #c5a367; /* Matches --accent-color */
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+}
+
+/* Make textareas and inputs look like part of the design, not "forms" */
+textarea::placeholder, input::placeholder {
+  color: var(--text-color);
+  opacity: 0.3;
+}

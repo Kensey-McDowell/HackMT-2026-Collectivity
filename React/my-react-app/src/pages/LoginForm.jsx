@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import pb from "../lib/pocketbase";
 
 export default function LoginForm({ onSwitch }) {
@@ -7,17 +8,25 @@ export default function LoginForm({ onSwitch }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const navigate = useNavigate();
+
   async function handleLogin(e) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
+      // ✅ LOGIN ONCE
       await pb.collection("users").authWithPassword(email, password);
 
-      console.log("Logged in:", pb.authStore.model);
-      // TODO: redirect to dashboard
+      console.log("AUTH VALID:", pb.authStore.isValid);
+      console.log("USER:", pb.authStore.model);
+
+      // ✅ Redirect after auth is stored
+      navigate("/home");
+
     } catch (err) {
+      console.error("LOGIN ERROR:", err.data || err);
       setError("Invalid email or password");
     } finally {
       setLoading(false);
