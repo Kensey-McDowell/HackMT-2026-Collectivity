@@ -2,19 +2,19 @@ import { useRef, useEffect, useCallback } from 'react';
 
 const ClickSpark = ({
   sparkColor = '#c5a367',   // default accent color
-  sparkSize = 10,            // length of each spark line
-  sparkRadius = 15,          // radius of explosion
-  sparkCount = 8,            // number of sparks per click
-  duration = 400,            // how long sparks last (ms)
-  easing = 'ease-out',       // easing function
-  extraScale = 1.0,          // extra scaling multiplier
+  sparkSize = 10,             // length of each spark line
+  sparkRadius = 15,           // radius of explosion
+  sparkCount = 8,             // number of sparks per click
+  duration = 400,             // how long sparks last (ms)
+  easing = 'ease-out',        // easing function
+  extraScale = 1.0,           // extra scaling multiplier
   children
 }) => {
   const canvasRef = useRef(null);
   const sparksRef = useRef([]);
   const startTimeRef = useRef(null);
 
-  // Resize canvas to parent dimensions
+  // Resize canvas 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
