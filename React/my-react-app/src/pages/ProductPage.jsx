@@ -78,7 +78,16 @@ export default function ProductPage() {
         </div>
       </nav>
 
+import React from 'react';
+import './productpage.css';
+
+export default function ProductPage() {
+  // We no longer need local isLoggedIn state here as the Header is in the Layout
+  
+  return (
+    <>
       <div className="product-container">
+        {/* LEFT PANEL: Visuals & Technicals */}
         <aside className="panel-visuals">
           <div className="visuals-top-stack">
             <div className="hero-image-aligned">
@@ -124,6 +133,7 @@ export default function ProductPage() {
           </div>
         </aside>
 
+        {/* RIGHT PANEL: Info & History */}
         <main className="panel-info">
           <header className="product-header">
             <h2 className="product-title">{product.collectible_name}</h2>
@@ -175,6 +185,6 @@ export default function ProductPage() {
           </button>
         </main>
       </div>
-    </div>
+    </>
   );
 }
