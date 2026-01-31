@@ -1,5 +1,7 @@
 import React from 'react';
 import './about.css';
+import CatPic from '../assets/images/TestPic.jpeg';
+import DogPic from '../assets/images/TestPic2.jpeg';
 
 export default function AboutPage() {
   return (
@@ -14,13 +16,61 @@ export default function AboutPage() {
       </div>
 
       {/* Sliding text */}
-      <div className="about-slide-up-text">About Collectibles</div>
+      <div className="about-slide-up-text">About Collectivity</div>
 
       <h1>About Us</h1>
       
-      <div className="about-people-container">
-        <h2> Who are we...</h2>
-      </div>
+        {/* From Uiverse.io by PriyanshuGupta28 */}
+        <div className="marquee">
+          <div className="marquee_header">See the creators!</div>
+          <div className="marquee__inner">
+            <div className="marquee__group">
+              <span className="scroll-image-container"> 
+                <span className="picture"> CatPic </span>
+                <img src={CatPic} alt = "CatPic"/> 
+                </span>
+              <span className="scroll-image-container"> 
+                <span className="picture"> DogPic </span>
+                <img src={DogPic} alt = "DogPic"/> 
+                </span>
+              <span>🚀 Item 3</span>
+              <span>🌟 Item 4</span>
+              <span>🎉 Item 5</span>
+              <span>🔥 Item 6</span>
+              <span>✨ Item 7</span>
+              <span>🚀 Item 8</span>
+              <span>🌟 Item 9</span>
+              <span>🎉 Item 10</span>
+              <span>🚀 Item 11</span>
+              <span>🌟 Item 12</span>
+              <span>🎉 Item 13</span>
+            </div>
+
+            <div className="marquee__group">
+              <span className="scroll-image-container"> 
+                <span className="picture"> CatPic </span>
+                <img src={CatPic} alt = "CatPic"/> 
+                </span>
+              <span className="scroll-image-container"> 
+                <span className="picture"> DogPic </span>
+                <img src={DogPic} alt = "DogPic"/> 
+                </span>
+              <span>🚀 Item 3</span>
+              <span>🌟 Item 4</span>
+              <span>🎉 Item 5</span>
+              <span>🔥 Item 6</span>
+              <span>✨ Item 7</span>
+              <span>🚀 Item 8</span>
+              <span>🌟 Item 9</span>
+              <span>🎉 Item 10</span>
+              <span>🚀 Item 11</span>
+              <span>🌟 Item 12</span>
+              <span>🎉 Item 13</span>
+            </div>
+          </div>
+        </div>
+
+      
 
       <div className="about-card" id="mission">
         <h2>Our Mission</h2>
