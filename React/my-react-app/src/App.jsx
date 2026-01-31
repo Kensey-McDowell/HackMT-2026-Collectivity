@@ -21,6 +21,8 @@ export default function App() {
         {/* --- GROUP 1: PUBLIC PAGES (NO HEADER) --- */}
         <Route path="/intro" element={<IntroPage />} />
         <Route path="/registration" element={<RegistrationPage />} />
+        <Route path="/social" element={<SocialPage />} />
+        <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 
         {/* --- GROUP 2: PAGES WITH GLOBAL HEADER --- */}
