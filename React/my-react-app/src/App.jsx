@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
+import RequireAuth from "./components/RequireAuth";
+
 import HomePage from "./pages/home.jsx";
 import IntroPage from "./pages/intro.jsx";
 import AboutPage from "./pages/about.jsx";
@@ -16,7 +18,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* --- GROUP 1: PAGES WITHOUT HEADER --- */}
+        {/* --- GROUP 1: PUBLIC PAGES (NO HEADER) --- */}
         <Route path="/intro" element={<IntroPage />} />
         <Route path="/registration" element={<RegistrationPage />} />
         <Route path="/profile" element={<ProfilePage />} />
