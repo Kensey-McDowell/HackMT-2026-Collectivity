@@ -1,17 +1,35 @@
 import React, { useState } from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import '../pages/social.css'; 
 
 export default function Layout() {
-  // Global state for login (you can later move this to Context or Redux)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Define paths where the "Back" button should NOT show (e.g., the main feed)
+  const isMainPage = location.pathname === '/' || location.pathname === '/social';
 
   return (
     <div className="social-dashboard-wrapper">
       
       {/* --- GLOBAL TOP NAVIGATION --- */}
       <nav className="social-main-nav">
-        <div className="w-1/3 invisible lg:visible" />
+        
+        {/* LEFT SLOT: Contextual Back Button */}
+        <div className="w-1/3 flex items-center">
+          {!isMainPage ? (
+            <button 
+              onClick={() => navigate(-1)} 
+              className="flex items-center text-[var(--accent-color)] uppercase tracking-[0.3em] text-[10px] font-bold group bg-transparent border-none cursor-pointer"
+            >
+              <span className="text-lg mr-2 transition-transform group-hover:-translate-x-1">←</span>
+              <span>Back</span>
+            </button>
+          ) : (
+            <div className="invisible lg:visible" />
+          )}
+        </div>
         
         <div className="w-1/3 text-center">
           <h1 className="social-platform-logo">COLLECTIVITY</h1>
@@ -34,7 +52,7 @@ export default function Layout() {
           ) : (
             <Link 
               to="/registration" 
-              className="px-6 py-2 border border-[var(--accent-color)] text-[var(--accent-color)] text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--accent-color)] hover:text-[var(--bg-color)] transition-all rounded-sm"
+              className="px-10 py-3 border border-[var(--accent-color)] text-[var(--accent-color)] text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--accent-color)] hover:text-[var(--bg-color)] transition-all rounded-sm"
             >
               Sign In
             </Link>
@@ -42,7 +60,7 @@ export default function Layout() {
         </div>
       </nav>
 
-      {/* --- CONTENT AREA: Sidebars and Main content will render here --- */}
+      {/* --- CONTENT AREA --- */}
       <div className="social-main-content-area">
         <Outlet />
       </div>
