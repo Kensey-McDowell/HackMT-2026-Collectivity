@@ -4,14 +4,15 @@ import CollectibleCard from '../components/collectibleCard';
 
 const MOCK_USER = {
   id: "user123",
-  username: "Ash Ketchum",
-  profileImageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuQupw8P5ewX8dxMamX8Yit1r8M9nMZ8EZ9g&s"
+  username: "John",
+  profileImageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuQupw8P5ewX8dxMamX8Yit1r8M9nMZ8EZ9g&s",
+  profileBannerUrl: "https://i.etsystatic.com/34466454/r/il/5e9775/4175504808/il_fullxfull.4175504808_bdhn.jpg"
 };
 
 const MOCK_ITEMS = [
   {
     id: "1",
-    name: "Cyber Punk Blade",
+    name: "Ducky",
     imageUrl: "https://m.media-amazon.com/images/I/511Wd7ip16L._AC_SY300_SX300_QL70_FMwebp_.jpg",
     collectionName: "Genesis Series",
     type: "Weapon",
@@ -19,8 +20,8 @@ const MOCK_ITEMS = [
   },
   {
     id: "2",
-    name: "Neon Visor",
-    imageUrl: "https://placehold.co/400x400/444/white?text=Visor",
+    name: "Toaster Extreme",
+    imageUrl: "https://t3.ftcdn.net/jpg/00/81/15/04/360_F_81150471_689xIvD8CrU8DvAZk2NOma9vZhEV9aL5.jpg",
     collectionName: "Apparel",
     type: "Gear",
     tags: ["Pokemon", "MTG", "misc", "Gen1", "Rare", "Limited", "Exclusive", "2023", "Collectible", "Digital"]
@@ -28,18 +29,20 @@ const MOCK_ITEMS = [
   },
   {
     id: "3",
-    name: "Void Shield",
-    imageUrl: "https://placehold.co/400x400/666/white?text=Shield",
+    name: "Picachu",
+    imageUrl: "https://www.brickheadscollectables.com/cdn/shop/products/49_hires_72b3a91c-c514-4069-8ced-5753d659b446.png?v=1706758626",
     collectionName: "Genesis Series",
     type: "Defense",
     tags: ["Pokemon", "MTG", "misc", "Gen1", "Rare", "Limited", "Exclusive", "2023", "Collectible", "Digital"]
-  }
+  },
+ 
+   
 ];
 
 export default function ProfilePage() {
   const [items, setItems] = useState(MOCK_ITEMS);
   const [user, setUser] = useState(MOCK_USER);
-  const isOwnProfile = true;
+  const isOwnProfile = false;
 
   // We use your :root variables here
   const pageStyle = { 
@@ -53,7 +56,11 @@ export default function ProfilePage() {
       <div className="max-w-7xl mx-auto">
         
         {/* HEADER SECTION */}
-        <div className="flex flex-col md:flex-row items-center md:items-end gap-8 mb-16">
+        <div className="flex flex-col md:flex-row items-center md:items-end gap-8 mb-16 bg-cover bg-center bg-no-repeat p-6 rounded-md shadow-[0_10px_30px_var(--shadow-color)] border border-[var(--border-color)]/100"
+          style={{ 
+            backgroundImage: `linear-gradient(to top, var(--bg-color) 0%, rgba(10, 9, 8, 0.4) 30%), url(${user.profileBannerUrl})` 
+          }} 
+        >
           <div className="relative">
             {/* Using your border color variable */}
             <img 
@@ -64,7 +71,7 @@ export default function ProfilePage() {
           </div>
           
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-5xl md:text-6xl font-medium italic tracking-tight mb-4 text-[var(--secondary-accent)]">
+            <h1 className="text-5xl md:text-6xl font-medium italic tracking-tight mb-4 text-[var(--text-color)]">
               {user.username}
             </h1>
             
@@ -90,7 +97,7 @@ export default function ProfilePage() {
         
                   {/* COLLECTIBLES SECTION */}
           <div className="mt-12">
-            <header className="flex items-center gap-6 text-[11px] font-medium tracking-[0.5em] text-[var(--border-color)] mb-10 uppercase">
+            <header className="flex items-center gap-6 text-[11px] font-medium tracking-[0.5em] text-[var(--text-color)]/100 mb-10 uppercase">
               <span className="italic">Collectibles</span>
               <div className="h-[1px] flex-1 bg-[var(--secondary-bg)]"></div>
             </header>
@@ -100,9 +107,9 @@ export default function ProfilePage() {
                             gap-4 md:gap-8 
                             p-6 md:p-10    
                             /* Removed the extra solid background line */
-                            bg-[var(--secondary-bg)]/30 
+                            bg-[var(--secondary-bg)]/30
                             backdrop-blur-sm           
-                            border border-[var(--border-color)]/40 
+                            border border-[var(--border-color)]/100 
                             rounded-md shadow-inner">     
                 {items.map((item) => (
                     <CollectibleCard key={item.id} item={item} />
