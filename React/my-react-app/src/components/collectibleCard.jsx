@@ -26,10 +26,10 @@ export default function CollectibleCard({ item }) {
 
       {/* 4. THE BOTTOM CONTENT (Title & Collection) */}
       <footer className="absolute bottom-0 left-0 right-0 p-3 text-[var(--text-color)] z-10">
-       <p className="text-sm font-bold italic tracking-tight truncate leading-tight font-serif mb-2 text-[var(--secondary-accent)]">
+       <p className="text-sm text-[25px] font-bold tracking-tight truncate leading-tight font-serif mb-1 text-[var(--text-color)]">
           {item.name}
         </p>
-        <p className="text-xs font-medium uppercase tracking-widest text-[var(--border-color)] mb-0.5">
+        <p className="text-xs font-medium uppercase tracking-widest text-[var(--secondary-color)] mb-0.5">
           {item.collectionName}
         </p>
        
@@ -39,13 +39,13 @@ export default function CollectibleCard({ item }) {
           {item.tags && item.tags.slice(0, 10).map((tag, index) => (
             <div 
               key={index} 
-              className={`relative w-10 h-4 ${index >= 5 ? 'hidden group-hover:block' : 'block'}`}
+              className={`relative w-14 h-6 ${index >= 4 ? 'hidden group-hover:block' : 'block'}`}
             >
               <button
                 title={tag}
                 className={`
                   absolute top-0 left-0 min-w-full w-full h-full 
-                  bg-[var(--bg-color)]/60 backdrop-blur-sm text-[var(--accent-color)] text-[6px] 
+                  bg-[var(--bg-color)]/60 backdrop-blur-sm text-[var(--accent-color)] text-[10px] 
                   font-bold uppercase rounded-sm border border-[var(--border-color)] 
                   px-1 truncate transition-all duration-200
                   hover:w-auto hover:z-30 hover:bg-[var(--accent-color)] hover:text-[var(--bg-color)]
