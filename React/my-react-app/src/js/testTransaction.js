@@ -1,8 +1,19 @@
 import { ethers } from 'ethers';
 
+// Vite exposes only env vars prefixed with VITE_ from .env (no dotenv package).
+// Restart the dev server (npm run dev) after changing .env.
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 const PRIVATE_KEY = import.meta.env.VITE_PRIVATE_KEY;
 const SEPOLIA_RPC = import.meta.env.VITE_SEPOLIA_RPC;
+
+if (!CONTRACT_ADDRESS || !SEPOLIA_RPC) {
+  const missing = [];
+  if (!CONTRACT_ADDRESS) missing.push('VITE_CONTRACT_ADDRESS');
+  if (!SEPOLIA_RPC) missing.push('VITE_SEPOLIA_RPC');
+  throw new Error(
+    `Missing env: ${missing.join(', ')}. Add them to .env in the React app root (same folder as package.json) and restart the dev server (npm run dev).`
+  );
+}
 const ABI = [
     
 	{

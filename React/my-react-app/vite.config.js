@@ -5,4 +5,5 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  envDir: '.', // load .env from project root (same folder as vite.config.js)
 })
