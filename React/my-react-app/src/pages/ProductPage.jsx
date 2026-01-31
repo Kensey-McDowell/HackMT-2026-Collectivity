@@ -1,48 +1,13 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import './productpage.css';
 
 export default function ProductPage() {
-  // Simple state to simulate login status from social.jsx
-  const [isLoggedIn] = useState(false);
-
+  // We no longer need local isLoggedIn state here as the Header is in the Layout
+  
   return (
-    <div className="product-viewport font-sans">
-      <nav className="main-nav">
-        <div className="w-1/3">
-          <Link to="/" className="back-link">
-            <span className="arrow">←</span>
-            <span className="back-text">Back</span>
-          </Link>
-        </div>
-        
-        <div className="w-1/3 text-center">
-          {/* Matches social.platform-logo size and text */}
-          <h1 className="platform-logo">COLLECTIVITY</h1>
-        </div>
-
-        {/* TOP RIGHT: Exactly as seen in social.jsx */}
-        <div className="w-1/3 flex justify-end items-center">
-          {isLoggedIn ? (
-            <div className="flex items-center gap-4 group cursor-pointer">
-              <span className="profile-name">Alex Rivera</span>
-              <div className="profile-avatar-container">
-                <img 
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" 
-                  alt="Profile" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          ) : (
-            <Link to="/registration" className="sign-in-btn">
-              Sign In
-            </Link>
-          )}
-        </div>
-      </nav>
-
+    <>
       <div className="product-container">
+        {/* LEFT PANEL: Visuals & Technicals */}
         <aside className="panel-visuals">
           <div className="visuals-top-stack">
             <div className="hero-image-aligned">
@@ -83,6 +48,7 @@ export default function ProductPage() {
           </div>
         </aside>
 
+        {/* RIGHT PANEL: Info & History */}
         <main className="panel-info">
           <header className="product-header">
             <h2 className="product-title">Obsidian Shard</h2>
@@ -129,6 +95,6 @@ export default function ProductPage() {
           </div>
         </main>
       </div>
-    </div>
+    </>
   );
 }
