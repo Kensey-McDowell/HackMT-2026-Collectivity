@@ -23,7 +23,8 @@ const MOCK_ITEMS = [
     imageUrl: "https://placehold.co/400x400/444/white?text=Visor",
     collectionName: "Apparel",
     type: "Gear",
-    tags: ["Pokemogggggggn", "Exclusive", "2023", "Collectible", "Digital"]
+    tags: ["Pokemon", "MTG", "misc", "Gen1", "Rare", "Limited", "Exclusive", "2023", "Collectible", "Digital"]
+
   },
   {
     id: "3",

@@ -39,7 +39,7 @@ export default function CollectibleCard({ item }) {
           {item.tags && item.tags.slice(0, 10).map((tag, index) => (
             <div 
               key={index} 
-              className={`relative w-10 h-4 ${index >= 4 ? 'hidden group-hover:block' : 'block'}`}
+              className={`relative w-10 h-4 ${index >= 5 ? 'hidden group-hover:block' : 'block'}`}
             >
               <button
                 title={tag}
@@ -49,7 +49,7 @@ export default function CollectibleCard({ item }) {
                   font-bold uppercase rounded-sm border border-[var(--border-color)] 
                   px-1 truncate transition-all duration-200
                   hover:w-auto hover:z-30 hover:bg-[var(--accent-color)] hover:text-[var(--bg-color)]
-                  ${index >= 4 ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}
+                  ${index >= 5 ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}
                 `}
               >
                 {tag}
