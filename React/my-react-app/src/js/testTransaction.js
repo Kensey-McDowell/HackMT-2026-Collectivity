@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 
-const CONTRACT_ADDRESS = "0x5E7faCe4C4ed385430b28cf09C4842D9554358BE";
-const PRIVATE_KEY = "153ee90b858dbaf4808eb624dda75fdfde55d15b38db5d51eeae62062136488e";
-const SEPOLIA_RPC = 'https://ethereum-sepolia.publicnode.com';
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
+const PRIVATE_KEY = import.meta.env.VITE_PRIVATE_KEY;
+const SEPOLIA_RPC = import.meta.env.VITE_SEPOLIA_RPC;
 const ABI = [
     
 	{
