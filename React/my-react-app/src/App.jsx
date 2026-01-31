@@ -24,7 +24,7 @@ export default function App() {
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/registration" element={<RegistrationPage />} />
         <Route path="/social" element={<SocialPage />} />
-        <Route path="/productpage" element={<ProductPage />} />
+        <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
       </Routes>
     </Router>
   );

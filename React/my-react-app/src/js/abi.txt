@@ -1,0 +1,114 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "collectible_name",
+				"type": "string"
+			},
+			{
+				"internalType": "int256",
+				"name": "tag",
+				"type": "int256"
+			},
+			{
+				"internalType": "int256",
+				"name": "price",
+				"type": "int256"
+			}
+		],
+		"name": "add_collectible_ledger",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes32",
+				"name": "unique_ID",
+				"type": "bytes32"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "collectible_name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "int256",
+				"name": "tag",
+				"type": "int256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "ownership",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "int256",
+				"name": "price",
+				"type": "int256"
+			}
+		],
+		"name": "Collectible_Added",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "collectibles_array",
+		"outputs": [
+			{
+				"internalType": "bytes32",
+				"name": "unique_ID",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "string",
+				"name": "collectible_name",
+				"type": "string"
+			},
+			{
+				"internalType": "int256",
+				"name": "tag",
+				"type": "int256"
+			},
+			{
+				"internalType": "address",
+				"name": "ownership",
+				"type": "address"
+			},
+			{
+				"internalType": "int256",
+				"name": "price",
+				"type": "int256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "get_array_length",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
