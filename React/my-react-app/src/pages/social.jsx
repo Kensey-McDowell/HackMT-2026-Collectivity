@@ -7,14 +7,14 @@ export default function SocialPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
-    <div className="dashboard-wrapper">
+    <div className="social-dashboard-wrapper">
       
       {/* --- TOP NAVIGATION --- */}
-      <nav className="main-nav">
+      <nav className="social-main-nav">
         <div className="w-1/3 invisible lg:visible" />
         
         <div className="w-1/3 text-center">
-          <h1 className="platform-logo">COLLECTIVITY</h1>
+          <h1 className="social-platform-logo">COLLECTIVITY</h1>
         </div>
 
         {/* TOP RIGHT: Conditional Profile or Sign In */}
@@ -44,16 +44,16 @@ export default function SocialPage() {
       </nav>
 
       {/* --- MAIN LAYOUT --- */}
-      <div className="main-content-area">
+      <div className="social-main-content-area">
         
         {/* LEFT SIDEBAR: Recently Viewed (3 Boxes) */}
-        <aside className="sidebar w-64 hidden lg:flex flex-col border-r border-[var(--border-color)]">
+        <aside className="social-sidebar w-64 hidden lg:flex flex-col border-r border-[var(--border-color)]">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-8 text-[var(--accent-color)]">
             Recently Viewed
           </h2>
           <div className="flex flex-col">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="sidebar-image-card">
+              <div key={i} className="social-sidebar-image-card">
                 <span className="text-[10px] uppercase tracking-widest font-bold">Recent {i}</span>
               </div>
             ))}
@@ -62,10 +62,10 @@ export default function SocialPage() {
 
         {/* CENTER COLUMN: Scrollable Image Box */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="scrollable-box">
+          <div className="social-scrollable-box">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {[...Array(24)].map((_, i) => (
-                <div key={i} className="image-card">
+                <div key={i} className="social-image-card">
                   <span className="text-[10px] uppercase tracking-widest font-bold">Picture {i + 1}</span>
                 </div>
               ))}
@@ -74,18 +74,18 @@ export default function SocialPage() {
         </main>
 
         {/* RIGHT SIDEBAR: Discovery & Search */}
-        <aside className="sidebar w-80 hidden md:flex flex-col gap-10 border-l border-[var(--border-color)]">
+        <aside className="social-sidebar w-80 hidden md:flex flex-col gap-10 border-l border-[var(--border-color)]">
           <h2 className="text-xl font-bold italic tracking-tighter">Discovery</h2>
           
           <div className="space-y-8">
             <section>
               <label className="text-[10px] font-bold uppercase tracking-widest mb-3 block opacity-50">Filter By Name</label>
-              <input type="text" placeholder="Search..." className="search-input" />
+              <input type="text" placeholder="Search..." className="social-search-input" />
             </section>
 
             <section>
               <label className="text-[10px] font-bold uppercase tracking-widest mb-3 block opacity-50">Category</label>
-              <select className="search-input cursor-pointer appearance-none">
+              <select className="social-search-input cursor-pointer appearance-none">
                 <option>All Exhibits</option>
                 <option>Cinematic</option>
                 <option>Modern Architecture</option>
