@@ -1,0 +1,105 @@
+:root {
+   /* Base Theme */
+  --bg-color: #0a0908;
+  --text-color: #f4ece1;
+  --accent-color: #c5a367;
+  --secondary-accent: #d9cbb3;
+  --secondary-bg: #2f2b28;
+  --hover-color: #cfc6b8;
+  --border-color: #6e6458;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Make centering reliable */
+html, body, #root {
+  height: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* fixes the “skinny right side” issue */
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Center the card */
+.auth-page {
+  min-height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Card sizing */
+.auth-card {
+  width: min(420px, 100%);
+  padding: 28px;
+  border: 1px solid #cfcfcf;
+  border-radius: 12px;
+  background: #fff;
+}
+
+/* Title */
+.auth-title {
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Form layout */
+.auth-form {
+  margin: 0;
+  width: 100%;
+}
+
+.auth-field {
+  margin-bottom: 14px;
+}
+
+.auth-label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #bdbdbd;
+  background: #fff;
+}
+
+/* Button */
+.auth-button {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #9a9a9a;
+  background: #f1f1f1;
+  cursor: pointer;
+}
+
+/* Footer */
+.auth-footer {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12px;
+}
+
+.auth-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
