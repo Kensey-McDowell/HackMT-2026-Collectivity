@@ -14,6 +14,7 @@ import RegistrationPage from "./pages/registration.jsx";
 import SocialPage from "./pages/social.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CreateCollectible from "./pages/CreateCollectible.jsx";
+import ChatWidget from "./ChatWidget.jsx";
 
 function ThemedApp() {
   const { theme, fontSize } = useSettings();
@@ -21,6 +22,7 @@ function ThemedApp() {
   return (
     <div className={`theme-${theme} font-${fontSize}`} style={{ minHeight: "100vh" }}>
       <Router>
+        <ChatWidget />
         <Routes>
           <Route path="/intro" element={<IntroPage />} />
           <Route path="/registration" element={<RegistrationPage />} />
