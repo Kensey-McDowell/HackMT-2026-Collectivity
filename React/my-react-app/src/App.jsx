@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { SettingsProvider, useSettings } from "./context/SettingsContext";
+
 import "./pages/theme.css"; 
 
 import Layout from "./components/Layout.jsx";
@@ -15,6 +16,7 @@ import SocialPage from "./pages/social.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CreateCollectible from "./pages/CreateCollectible.jsx";
 import ChatWidget from "./ChatWidget.jsx";
+import ClickSpark from "./components/ClickSpark.jsx";
 
 function ThemedApp() {
   const { theme, fontSize } = useSettings();
@@ -22,27 +24,30 @@ function ThemedApp() {
   return (
     <div className={`theme-${theme} font-${fontSize}`} style={{ minHeight: "100vh" }}>
       <Router>
-        <ChatWidget />
+        {/* --- ClickSpark wraps everything, but only activates on allowed pages --- */}
+        <ClickSpark>
+          <ChatWidget />
 
-        <Routes>
-          <Route path="/intro" element={<IntroPage />} />
-          <Route path="/registration" element={<RegistrationPage />} />
-         
-          <Route path="/profile" element={<ProfilePage />} />
-
-          <Route element={<Layout />}>
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/productpage" element={<ProductPage />} />
-             <Route path="/social" element={<SocialPage />} />
-          <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
-            <Route path="/create" element={<CreateCollectible />} />
-          </Route>
-        </Routes>
+          <Routes>
+            <Route path="/intro" element={<IntroPage />} />
+            <Route path="/registration" element={<RegistrationPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+            <Route element={<Layout />}>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/home" element={<HomePage />} />
+              
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/productpage" element={<ProductPage />} />
+              <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
+              <Route path="/social" element={<SocialPage />} />
+              <Route path="/create" element={<CreateCollectible />} />
+            </Route>
+          </Routes>
+        </ClickSpark>
       </Router>
     </div>
   );

@@ -3,10 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom'; // 1. Import the hook
 
 import { printAllCollectibles } from '../js/testTransaction.js';
-import './productpage.css';
-import { ID_TO_STR } from '../js/tags'; // Import your mapping
+import pb from '../lib/pocketbase';
+import './ProductPage.css';
+import { ID_TO_STR } from '../js/tags';
 
-  const STATUS_LABELS = {
+const PB_COLLECTABLES = 'collectables';
+
+const STATUS_LABELS = {
   0: "Verified",
   1: "Not Verified",
   2: "For Sale",
@@ -26,6 +29,7 @@ export default function ProductPage() {
 
   const { itemIndex } = useParams();
   const [product, setProduct] = useState(null);
+  const [productImageUrl, setProductImageUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const statusLabel = STATUS_LABELS[product?.status];
@@ -36,23 +40,37 @@ export default function ProductPage() {
        navigate('/social', { state: { filterTag: tagLabel } });
   };
 
-
-  const isLoggedIn = true; 
-  const user = { username: "AUTHENTICATED_USER" };  
+  const isLoggedIn = true;
+  const user = { username: "AUTHENTICATED_USER" };
 
   useEffect(() => {
     window.scrollTo(0, 0);
     async function loadProduct() {
+      if (itemIndex == null || itemIndex === '') return;
       try {
         setIsLoading(true);
+        setProductImageUrl(null);
         const allItems = await printAllCollectibles();
         
         // Match the ID from URL to the 'index' in your blockchain data
-        const foundProduct = allItems.find(i => 
+        const foundProduct = allItems.find(i =>
           String(i.index).toLowerCase() === String(itemIndex).toLowerCase()
         );
-        
         setProduct(foundProduct);
+
+        const uniqueIDValue = foundProduct?.unique_ID != null ? String(foundProduct.unique_ID) : '';
+        if (uniqueIDValue) {
+          try {
+            const row = await pb.collection(PB_COLLECTABLES).getFirstListItem(`unique_id = "${uniqueIDValue.replace(/"/g, '\\"')}"`);
+            console.log('Row:', row);
+            if (row?.images?.length) {
+              setProductImageUrl(pb.files.getUrl(row, row.images[0]));
+            }
+          } catch (pbErr) {
+            console.warn('ProductPage: PocketBase image not found for unique_id', uniqueIDValue, pbErr);
+            setProductImageUrl(null);
+          }
+        }
       } catch (err) {
         console.error("Load failed:", err);
       } finally {
@@ -102,9 +120,13 @@ export default function ProductPage() {
         <aside className="panel-visuals">
           <div className="visuals-top-stack">
             <div className="hero-image-aligned">
-              <div className="flex items-center justify-center h-full w-full uppercase tracking-[0.5em] text-[var(--border-color)] font-bold text-[10px]">
-                Asset View
-              </div>
+              {productImageUrl ? (
+                <img src={productImageUrl} alt={product.collectible_name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="flex items-center justify-center h-full w-full uppercase tracking-[0.5em] text-[var(--border-color)] font-bold text-[10px]">
+                  Asset View
+                </div>
+              )}
             </div>
             <div className="thumb-scroller-aligned">
               {[1, 2, 3, 4].map((i) => (

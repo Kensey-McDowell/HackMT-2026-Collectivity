@@ -1,11 +1,17 @@
-/* -----------------------------------------------------------
-   SETTINGS PAGE LAYOUT
------------------------------------------------------------ */
 .settings-page {
   background-color: var(--bg-color);
   color: var(--text-color);
   min-height: 100vh;
   padding: 24px;
+  overflow-y: auto !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }
 
 .settings-title {
@@ -14,15 +20,19 @@
   margin-bottom: 24px;
 }
 
-/* -----------------------------------------------------------
-   SECTIONS
------------------------------------------------------------ */
 .settings-section {
   background-color: var(--secondary-bg);
   padding: 20px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
   margin-bottom: 32px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
 }
 
 .section-title {
@@ -30,13 +40,11 @@
   margin-bottom: 16px;
 }
 
-/* -----------------------------------------------------------
-   INPUTS
------------------------------------------------------------ */
 .settings-input-group {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .settings-input {
@@ -60,9 +68,6 @@
   border: none;
 }
 
-/* -----------------------------------------------------------
-   PROFILE PICTURE PREVIEW
------------------------------------------------------------ */
 .profile-preview {
   width: 96px;
   height: 96px;
@@ -78,9 +83,6 @@
   object-fit: cover;
 }
 
-/* -----------------------------------------------------------
-   DROPDOWNS
------------------------------------------------------------ */
 .dropdown {
   width: 260px;
   margin-bottom: 24px;
@@ -90,6 +92,7 @@
   color: var(--text-color);
   margin-bottom: 6px;
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .dropdown-selected {
@@ -135,6 +138,7 @@
   cursor: pointer;
   color: var(--text-color);
   transition: 0.2s;
+  text-align: center;
 }
 
 .dropdown-item:hover {
@@ -142,10 +146,13 @@
   color: var(--bg-color);
 }
 
-/* -----------------------------------------------------------
-   ANIMATIONS
------------------------------------------------------------ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.social-main-content-area {
+  justify-content: center !important;
+  align-items: flex-start !important;
+  overflow-y: auto !important;
 }
