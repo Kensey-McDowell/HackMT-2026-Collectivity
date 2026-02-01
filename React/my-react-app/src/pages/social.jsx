@@ -14,18 +14,20 @@ export default function SocialPage() {
   const [recentItems, setRecentItems] = useState([]);
   const [recommendedItems, setRecommendedItems] = useState([]);
   const [topInterests, setTopInterests] = useState([]);
+  const [followingList, setFollowingList] = useState([]); // New state for following
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Memorabilia");
   const [availableTags, setAvailableTags] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
   
-  const [activeSidebarTab, setActiveSidebarTab] = useState('recent'); 
+  const [activeSidebarTab, setActiveSidebarTab] = useState('following'); // Set following as default if desired
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       try {
+        // 1. Fetch Global Collectibles
         const records = await pb.collection(PB_COLLECTABLES).getFullList({
           sort: '-created',
           expand: 'category,tags',
@@ -40,6 +42,7 @@ export default function SocialPage() {
         }));
         setCollectibles(items);
 
+        // 2. Fetch Recent Views from LocalStorage
         const recentIds = JSON.parse(localStorage.getItem('recent_views') || '[]');
         if (recentIds.length > 0) {
           const filterStr = recentIds.map(id => `id="${id}"`).join(' || ');
@@ -53,7 +56,17 @@ export default function SocialPage() {
           setRecentItems(sortedRecents);
         }
 
+        // 3. User Specific Data (Interests and Following)
         if (pb.authStore.model) {
+          // Fetch Following Data
+          // We fetch the current user record again to expand the 'following' relation
+          const userWithFollowing = await pb.collection('users').getOne(pb.authStore.model.id, {
+            expand: 'following',
+            $autoCancel: false
+          });
+          setFollowingList(userWithFollowing.expand?.following || []);
+
+          // Fetch Analytics/Interests
           const analytics = await pb.collection(PB_ANALYTICS).getList(1, 40, {
             filter: `user = "${pb.authStore.model.id}"`,
             sort: '-view_count',
@@ -112,7 +125,13 @@ export default function SocialPage() {
   });
 
   const SidebarNav = () => (
-    <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-2">
+    <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-2 gap-2">
+      <button 
+        onClick={() => setActiveSidebarTab('following')}
+        className={`text-[9px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'following' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
+      >
+        Following
+      </button>
       <button 
         onClick={() => setActiveSidebarTab('recent')}
         className={`text-[9px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'recent' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
@@ -142,6 +161,30 @@ export default function SocialPage() {
           <SidebarNav />
           
           <div className="flex flex-col gap-4 overflow-y-auto pr-1">
+            {activeSidebarTab === 'following' && (
+              followingList.length > 0 ? (
+                followingList.map((user) => (
+                  <Link key={user.id} to={`/profile/${user.id}`} className="flex items-center gap-3 p-2 border border-white/5 bg-white/5 hover:border-[var(--accent-color)]/30 transition-all group">
+                    <div className="w-10 h-10 rounded-full border border-[var(--accent-color)]/20 overflow-hidden shrink-0">
+                      <img 
+                        src={user.avatar ? pb.files.getURL(user, user.avatar) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} 
+                        alt={user.username} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[10px] uppercase tracking-widest font-bold text-white group-hover:text-[var(--accent-color)] transition-colors truncate">
+                        {user.username || user.name || "Collector"}
+                      </span>
+                      <span className="text-[8px] opacity-30 font-mono italic uppercase">View Vault</span>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="text-[9px] opacity-20 italic text-center mt-10 uppercase tracking-widest">Not following anyone</div>
+              )
+            )}
+
             {activeSidebarTab === 'recent' && (
               recentItems.length > 0 ? (
                 recentItems.map((item) => (

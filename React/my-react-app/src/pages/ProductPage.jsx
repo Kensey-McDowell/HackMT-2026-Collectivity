@@ -95,12 +95,17 @@ export default function ProductPage() {
           expand: 'category,tags,created_by',
           $autoCancel: false 
         });
+
         const logs = await pb.collection(PB_LOGS).getFullList({
           filter: `collectible_id = "${itemIndex}"`,
           sort: '-created',
           expand: 'changed_by',
           $autoCancel: false
         });
+
+        // Debug: Check if 'created_by' is present in the expand object
+        console.log("Expanded data check:", record.expand);
+
         setProduct({
           ...record,
           collectible_name: record.name,
