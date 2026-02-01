@@ -1,158 +1,65 @@
 .settings-page {
   background-color: var(--bg-color);
-  color: var(--text-color);
-  min-height: 100vh;
-  padding: 24px;
-  overflow-y: auto !important;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+}
+
+.setting-box-rect {
   width: 100%;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box;
-}
-
-.settings-title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 24px;
-}
-
-.settings-section {
-  background-color: var(--secondary-bg);
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  margin-bottom: 32px;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 400px;
-}
-
-.section-title {
-  font-size: 1.4rem;
-  margin-bottom: 16px;
-}
-
-.settings-input-group {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.settings-input {
-  margin-top: 8px;
-  padding: 8px;
-  width: 260px;
-  border-radius: 6px;
-  background-color: var(--secondary-bg);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.settings-button {
-  margin-top: 12px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  background-color: var(--accent-color);
-  color: var(--bg-color);
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-}
-
-.profile-preview {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-bottom: 12px;
-  border: 1px solid var(--border-color);
-}
-
-.profile-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.dropdown {
-  width: 260px;
-  margin-bottom: 24px;
-}
-
-.dropdown-label {
-  color: var(--text-color);
-  margin-bottom: 6px;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-.dropdown-selected {
-  background: var(--secondary-bg);
-  color: var(--text-color);
-  padding: 12px 14px;
+  height: 110px; /* Slightly taller */
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  border: 1px solid var(--border-color);
-  cursor: pointer;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  transition: 0.2s;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  padding: 0 25px;
 }
 
-.dropdown-selected:hover {
+.setting-box-rect:hover {
+  background: rgba(255, 255, 255, 0.05);
   border-color: var(--accent-color);
+  transform: translateY(-2px);
 }
 
-.arrow {
-  border: solid var(--text-color);
-  border-width: 0 2px 2px 0;
-  padding: 4px;
-  transform: rotate(45deg);
-  transition: 0.2s;
+.active-box {
+  border-color: var(--accent-color);
+  background: rgba(212, 175, 55, 0.03);
+  box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.05);
 }
 
-.arrow.open {
-  transform: rotate(-135deg);
-}
-
-.dropdown-menu {
-  margin-top: 6px;
-  background: var(--secondary-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  overflow: hidden;
-  animation: fadeIn 0.2s ease;
-}
-
-.dropdown-item {
-  padding: 10px 14px;
-  cursor: pointer;
-  color: var(--text-color);
-  transition: 0.2s;
+.box-label-full {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  color: white;
   text-align: center;
+  line-height: 1.5;
 }
 
-.dropdown-item:hover {
-  background: var(--hover-color);
-  color: var(--bg-color);
+.terminal-input-slim {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  color: white;
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  outline: none;
+}
+
+.label-gold {
+  color: #d4af37;
+}
+
+/* Modal/Central Area Fade In */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-.social-main-content-area {
-  justify-content: center !important;
-  align-items: flex-start !important;
-  overflow-y: auto !important;
 }
