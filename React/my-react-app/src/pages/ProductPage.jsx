@@ -118,22 +118,18 @@ export default function ProductPage() {
           <div className="info-technical-grid">
             <div className="tech-row">
               <div className="flex flex-col">
-                <span className="label-gold-dim">Owner</span>
-                <span className="tech-value">{product.ownership}</span>
-              </div>
-              <div className="flex flex-col text-right">
                 <span className="label-gold-dim">Asset Status</span>
                 <span className="tech-value text-green-400">{statusLabel}</span>
+              </div>
+              <div className="flex flex-col text-right">
+                <span className="label-gold-dim">Market Value</span>
+                <span className="tech-value text-[var(--accent-color)] font-bold">$ {Number(product.price).toLocaleString()}</span>
               </div>
             </div>
             <div className="tech-row border-b-0">
               <div className="flex flex-col">
-                <span className="label-gold-dim">Physical Location</span>
-                <span className="tech-value">London Gallery</span>
-              </div>
-              <div className="flex flex-col text-right">
-                <span className="label-gold-dim">Market Value</span>
-                <span className="tech-value text-[var(--accent-color)] font-bold">{product.price}</span>
+                <span className="label-gold-dim">Owner</span>
+                <span className="tech-value">{product.ownership}</span>
               </div>
             </div>
           </div>
