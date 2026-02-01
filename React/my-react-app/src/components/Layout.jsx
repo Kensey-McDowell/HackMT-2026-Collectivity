@@ -41,8 +41,9 @@ export default function Layout() {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Use ID as seed for a consistent unique avatar per user
   const avatarUrl = user
-    ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
+    ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`
     : "";
 
   return (
@@ -66,7 +67,9 @@ export default function Layout() {
 
         {/* CENTER */}
         <div className="w-1/3 text-center">
-          <h1 className="social-platform-logo">COLLECTIVITY</h1>
+          <h1 className="social-platform-logo" onClick={() => navigate("/social")} style={{cursor: 'pointer'}}>
+            COLLECTIVITY
+          </h1>
         </div>
 
         {/* RIGHT */}
@@ -82,8 +85,6 @@ export default function Layout() {
               >
                 Sign In
               </button>
-
-            
             </div>
           ) : (
             <div ref={dropdownRef} className="relative">
@@ -94,7 +95,7 @@ export default function Layout() {
                 type="button"
               >
                 <span className="text-sm font-bold tracking-widest uppercase text-[var(--text-color)] group-hover:text-[var(--accent-color)] transition-colors">
-                  {user.username}
+                  {user.name || user.username}
                 </span>
 
                 <div className="w-11 h-11 rounded-full border-2 border-[var(--border-color)] overflow-hidden transition-all group-hover:border-[var(--accent-color)]">
@@ -114,7 +115,8 @@ export default function Layout() {
                       className="account-item"
                       onClick={() => {
                         setOpen(false);
-                        navigate("/profile");
+                        // DYNAMIC CHANGE: Navigate to the specific user ID
+                        navigate(`/profile/${user.id}`);
                       }}
                     >
                       Account

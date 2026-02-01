@@ -32,7 +32,7 @@ function ThemedApp() {
             <Route path="/intro" element={<IntroPage />} />
             <Route path="/registration" element={<RegistrationPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-
+            <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route element={<Layout />}>
               <Route path="/" element={<Navigate to="/home" replace />} />
               <Route path="/home" element={<HomePage />} />
