@@ -127,7 +127,7 @@ export default function Layout() {
                       onClick={() => {
                         setOpen(false);
                         // DYNAMIC CHANGE: Navigate to the specific user ID
-                        navigate(`/profile/${user.id}`);
+                        navigate(`/profile/`);
                       }}
                     >
                       Account

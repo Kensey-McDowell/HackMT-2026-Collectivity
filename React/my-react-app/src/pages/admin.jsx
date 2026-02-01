@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PocketBase from "pocketbase";
 import collectiblesData from "./data/collectibles.json";
+import './index.css';
 
 /**
  * Admin Panel (AUTH STRIPPED)
