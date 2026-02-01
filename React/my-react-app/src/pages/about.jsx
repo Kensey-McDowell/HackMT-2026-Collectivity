@@ -1,12 +1,11 @@
 import React from 'react';
-import './index.css';
+import './about.css';
 import CatPic from '../assets/images/TestPic.jpeg';
 import DogPic from '../assets/images/TestPic2.jpeg';
 
 export default function AboutPage() {
   return (
     
-
     <div className="about-container">
       {/* Jump links */}
       <div className="about-jump-links">
@@ -18,7 +17,6 @@ export default function AboutPage() {
       {/* Sliding text */}
       <div className="about-slide-up-text">About Collectivity</div>
 
-      <h1>About Us</h1>
       
         {/* From Uiverse.io by PriyanshuGupta28 */}
         <div className="marquee">
@@ -26,46 +24,112 @@ export default function AboutPage() {
           <div className="marquee__inner">
             <div className="marquee__group">
               <span className="scroll-image-container"> 
-                <span className="picture"> CatPic </span>
                 <img src={CatPic} alt = "CatPic"/> 
+                <span className="picture"> CatPic </span>
                 </span>
               <span className="scroll-image-container"> 
-                <span className="picture"> DogPic </span>
                 <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
                 </span>
-              <span>🚀 Item 3</span>
-              <span>🌟 Item 4</span>
-              <span>🎉 Item 5</span>
-              <span>🔥 Item 6</span>
-              <span>✨ Item 7</span>
-              <span>🚀 Item 8</span>
-              <span>🌟 Item 9</span>
-              <span>🎉 Item 10</span>
-              <span>🚀 Item 11</span>
-              <span>🌟 Item 12</span>
-              <span>🎉 Item 13</span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
             </div>
 
             <div className="marquee__group">
               <span className="scroll-image-container"> 
-                <span className="picture"> CatPic </span>
                 <img src={CatPic} alt = "CatPic"/> 
+                <span className="picture"> CatPic </span>
                 </span>
               <span className="scroll-image-container"> 
-                <span className="picture"> DogPic </span>
                 <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
                 </span>
-              <span>🚀 Item 3</span>
-              <span>🌟 Item 4</span>
-              <span>🎉 Item 5</span>
-              <span>🔥 Item 6</span>
-              <span>✨ Item 7</span>
-              <span>🚀 Item 8</span>
-              <span>🌟 Item 9</span>
-              <span>🎉 Item 10</span>
-              <span>🚀 Item 11</span>
-              <span>🌟 Item 12</span>
-              <span>🎉 Item 13</span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
+              <span className="scroll-image-container"> 
+                <img src={DogPic} alt = "DogPic"/> 
+                <span className="picture"> DogPic </span>
+                </span>
             </div>
           </div>
         </div>

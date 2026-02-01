@@ -3,7 +3,7 @@ import './CreateCollectible.css';
 import { addCollectible } from '../js/testTransaction.js';
 
 export default function CreateCollectible() {
-  const categoryPool = ["Numismatics", "Fine Art", "Horology", "Vintage Tech", "Automobilia", "Jewelry", "First Editions", "Wine & Spirits"];
+  const categoryPool = ["Cards", "Game Items", "Military Items", "Sneakers", "Sports"];
   const tagPool = ["Rare", "Mint", "Signed", "Limited", "Antique", "Restored", "Original Box", "Auction Grade", "Provenanced"];
 
   const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ export default function CreateCollectible() {
   });
 
   const [catSearch, setCatSearch] = useState('');
-  const [tagSearch, setTagSearch] = useState('');
+  const [tagSearch, setTagSearch] = useState(''); 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successTxHash, setSuccessTxHash] = useState(null);
@@ -107,7 +107,10 @@ export default function CreateCollectible() {
           </div>
           <div>
             <span className="label-gold">Valuation</span>
-            <input type="text" placeholder="$ 0.00" className="w-full bg-transparent border-b border-white/10 py-1 outline-none text-[var(--accent-color)] font-mono text-sm" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} />
+            <span className="flex items-baseline border-b border-white/10 py-1">
+              <span className="text-[var(--accent-color)] font-mono text-sm mr-1">$</span>
+              <input type="text" placeholder="0.00" className="flex-1 min-w-0 bg-transparent outline-none text-[var(--accent-color)] font-mono text-sm" value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} />
+            </span>
           </div>
         </div>
 
