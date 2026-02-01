@@ -94,12 +94,10 @@ export default function ProfilePage() {
             <div className="flex justify-center md:justify-start gap-4">
               {isOwnProfile ? (
                 <>
-                  <button className="px-6 py-2 rounded-sm bg-[var(--accent-color)] text-[var(--bg-color)] text-[11px] font-bold uppercase tracking-widest hover:brightness-110 transition-all duration-300">
-                    Edit Profile
-                  </button>
-                  <button className="px-7 py-2 rounded-sm border border-[var(--border-color)] text-[var(--text-color)] text-[11px] font-bold uppercase tracking-widest hover:bg-[var(--secondary-bg)] transition-all duration-300">
-                    Import Asset
-                  </button>
+                  
+                  <a href="/create" className="px-7 py-2 rounded-sm border border-[var(--border-color)] text-[var(--text-color)] text-[11px] font-bold uppercase tracking-widest hover:bg-[var(--secondary-bg)] transition-all duration-300">
+                    Create Collectible
+                  </a>
                 </>
               ) : (
                 <button className="px-10 py-2 rounded-sm bg-[var(--accent-color)] text-[var(--bg-color)] text-[11px] font-bold uppercase tracking-widest hover:opacity-90 transition-all">
