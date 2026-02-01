@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; 
-import { printAllCollectibles } from '../js/testTransaction.js';
 import CollectibleCard from '../components/collectibleCard';
 import pb from '../lib/pocketbase';
 import './profile.css';
@@ -12,154 +11,125 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState(null);
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const isOwnProfile = pb.authStore.isValid && pb.authStore.model.id === userId;
 
   useEffect(() => {
-    // 1. Create an AbortController or just disable auto-cancel in PB
-    async function fetchProfileAndInventory() {
+    async function loadProfileAndInventory() {
       try {
         setIsLoading(true);
-        setError(null);
+        const userRecord = await pb.collection('users').getOne(userId, { $autoCancel: false });
         
-        // Disable auto-cancellation for this specific request
-        const userRecord = await pb.collection('users').getOne(userId, {
-          $autoCancel: false 
-        });
-        
-        const userData = {
-          name: userRecord.name || "Anonymous Collector",
-          email: userRecord.email,
+        setProfileData({
+          username: userRecord.username || userRecord.name || "Collector",
           profileImageUrl: userRecord.avatar 
-            ? pb.files.getURL(userRecord, userRecord.avatar) // Updated to getURL
+            ? pb.files.getURL(userRecord, userRecord.avatar) 
             : `https://api.dicebear.com/7.x/avataaars/svg?seed=${userRecord.id}`,
           profileBannerUrl: userRecord.banner 
-            ? pb.files.getURL(userRecord, userRecord.banner) // Updated to getURL
+            ? pb.files.getURL(userRecord, userRecord.banner) 
             : "https://i.etsystatic.com/34466454/r/il/5e9775/4175504808/il_fullxfull.4175504808_bdhn.jpg",
-          address: userRecord.wallet_address || "" 
-        };
-        setProfileData(userData);
+        });
 
-        // 2. Fetch Blockchain Inventory
-        const data = await printAllCollectibles();
-        const allItems = Array.isArray(data) ? data : [];
-        
-        // 3. Filter by wallet address
-        let userItems = allItems;
-        if (userData.address) {
-            userItems = allItems.filter(item => 
-              item.ownership?.toLowerCase() === userData.address?.toLowerCase()
-            );
-        }
+        const records = await pb.collection(PB_COLLECTABLES).getFullList({
+          filter: `created_by = "${userId}"`,
+          sort: '-created',
+          expand: 'category,tags',
+          $autoCancel: false
+        });
 
-        // 4. Attach metadata images
-        for (const item of userItems) {
-          const uniqueId = item.unique_ID != null ? String(item.unique_ID) : '';
-          if (!uniqueId) continue;
-          try {
-            // Disable auto-cancel here too since we're in a loop
-            const row = await pb.collection(PB_COLLECTABLES).getFirstListItem(`unique_id = "${uniqueId}"`, {
-              $autoCancel: false
-            });
-            if (row?.images?.length) {
-              item.imageUrl = pb.files.getURL(row, row.images[0]); // Updated to getURL
-            }
-          } catch (_) { /* Metadata not found */ }
-        }
-
-        setItems(userItems);
+        setItems(records.map(record => ({
+          ...record,
+          collectible_name: record.name,
+          imageUrl: record.images?.length ? pb.files.getURL(record, record.images[0]) : null,
+          index: record.id 
+        })));
       } catch (err) {
-        // Only set error if it's NOT an auto-cancel error
-        if (err.name !== 'ClientResponseError' || err.isAbort === false) {
-            console.error("Profile load error:", err);
-            setError(`Collector not found. Error: ${err.message}`);
-        }
+        console.error("Failed to load profile:", err);
       } finally {
         setIsLoading(false);
       }
     }
 
-    if (userId) {
-        fetchProfileAndInventory();
-    }
+    if (userId) loadProfileAndInventory();
   }, [userId]);
 
   const pageStyle = { 
     fontFamily: "'Playfair Display', serif",
     backgroundColor: "var(--bg-color)",
-    color: "var(--text-color)"
+    color: "var(--text-color)",
+    width: "100%"
   };
 
   if (isLoading) return (
     <div style={pageStyle} className="min-h-screen flex items-center justify-center uppercase tracking-[0.5em]">
-      Scanning Blockchain Registry...
+      Accessing Vault Records...
     </div>
   );
 
-  if (error) return (
-    <div style={pageStyle} className="min-h-screen flex flex-col items-center justify-center gap-4">
-      <div className="uppercase tracking-[0.2em] opacity-50 text-sm">Registry Error</div>
-      <div className="text-xl italic">{error}</div>
-    </div>
-  );
-
-  // Fallback if data hasn't loaded yet
   if (!profileData) return null;
 
   return (
-    <div style={pageStyle} className="min-h-screen p-4 md:p-8 antialiased">
-      <div className="max-w-7xl mx-auto">
+    <div style={pageStyle} className="min-h-screen p-2 md:p-4 antialiased">
+      {/* max-w-full removes all side constraints */}
+      <div className="w-full px-4 md:px-8">
+        
+        {/* HEADER SECTION - Ultra wide banner style */}
         <div 
-          className="flex flex-col md:flex-row items-center md:items-end gap-8 mb-16 bg-cover bg-center bg-no-repeat p-10 rounded-md shadow-2xl border border-[var(--border-color)]"
+          className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10 bg-cover bg-center bg-no-repeat p-10 md:p-16 rounded-sm border border-[var(--border-color)]"
           style={{ 
-            backgroundImage: `linear-gradient(to top, var(--bg-color) 0%, rgba(10, 9, 8, 0.4) 30%), url(${profileData.profileBannerUrl})` 
+            backgroundImage: `linear-gradient(to right, var(--bg-color) 15%, rgba(10, 9, 8, 0.1) 100%), url(${profileData.profileBannerUrl})`,
+            minHeight: '200px'
           }} 
         >
-          <div className="relative">
+          <div className="flex flex-col md:flex-row items-center gap-10">
             <img 
               src={profileData.profileImageUrl}
               alt="Profile" 
-              className="w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-[var(--accent-color)] object-cover shadow-2xl bg-[var(--bg-color)]" 
+              className="w-32 h-32 md:w-44 md:h-44 rounded-full border-2 border-[var(--accent-color)] object-cover bg-[var(--bg-color)] shadow-2xl" 
             />
+            <div className="text-center md:text-left">
+              <span className="text-[10px] uppercase tracking-[0.6em] text-[var(--accent-color)] font-bold block mb-2">Vault Identifier</span>
+              <h1 className="text-5xl md:text-8xl font-medium italic tracking-tighter text-[var(--text-color)] drop-shadow-2xl">
+                {profileData.username}
+              </h1>
+            </div>
           </div>
           
-          <div className="flex-1 text-center md:text-left">
-            <span className="text-[10x] uppercase tracking-[0.4em] opacity-50 block mb-2">Collector Signature</span>
-            <h1 className="text-5xl md:text-6xl font-medium italic tracking-tight mb-6 text-[var(--text-color)] drop-shadow-lg">
-              {profileData.name}
-            </h1>
-            
-            <div className="flex justify-center md:justify-start gap-4">
-              {isOwnProfile ? (
-                  <a href="/settings" className="px-7 py-2 rounded-sm border border-[var(--border-color)] text-[var(--text-color)] text-[11px] font-bold uppercase tracking-widest hover:bg-[var(--secondary-bg)] transition-all duration-300">
-                    Edit Profile
-                  </a>
-              ) : (
-                <button className="px-10 py-2 rounded-sm bg-[var(--accent-color)] text-[var(--bg-color)] text-[11px] font-bold uppercase tracking-widest hover:opacity-90 transition-all">
-                  Follow
-                </button>
-              )}
+          <div className="flex flex-col items-center md:items-end gap-3">
+            {isOwnProfile && (
+              <a href="/#/create" className="px-12 py-3 bg-[var(--accent-color)] text-[var(--bg-color)] text-[11px] font-bold uppercase tracking-[0.2em] hover:opacity-90 transition-all shadow-lg">
+                Create New Asset
+              </a>
+            )}
+            <div className="text-[10px] uppercase tracking-widest opacity-40 italic">
+              Member since {new Date().getFullYear()}
             </div>
           </div>
         </div>
 
-        <div className="mt-12">
-          <header className="flex items-center gap-6 text-[11px] font-medium tracking-[0.5em] text-[var(--text-color)] mb-10 uppercase opacity-80">
-            <span className="italic">Inventory</span>
-            <div className="h-[1px] flex-1 bg-[var(--border-color)]/20"></div>
-            <span className="opacity-40">{items.length} Assets</span>
+        {/* INVENTORY SECTION - 8 to 10 columns on wide screens */}
+        <div className="w-full">
+          <header className="flex items-center gap-4 text-[11px] font-bold tracking-[0.8em] text-[var(--text-color)] mb-8 uppercase opacity-60">
+            <span className="italic">Authorized Inventory</span>
+            <div className="h-[1px] flex-1 bg-[var(--border-color)]/40"></div>
+            <span className="text-[var(--accent-color)]">{items.length} Items</span>
           </header>
           
           {items.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-8 p-6 md:p-10 bg-[var(--secondary-bg)]/30 backdrop-blur-sm border border-[var(--border-color)]/50 rounded-md shadow-inner">     
+            /* Using a maximum-width grid with high column count */
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12
+                            gap-4 md:gap-5
+                            p-4 md:p-6     
+                            bg-[var(--secondary-bg)]/5
+                            border border-[var(--border-color)]/10 
+                            rounded-sm">     
                 {items.map((item) => (
-                    <CollectibleCard key={item.unique_ID} item={item} />
+                    <CollectibleCard key={item.id} item={item} />
                 ))}
             </div>
           ) : (
-            <div className="text-center py-20 border border-dashed border-[var(--border-color)] opacity-40 rounded-md">
-              <p className="uppercase tracking-widest text-xs">No assets detected.</p>
+            <div className="text-center py-32 border border-dashed border-[var(--border-color)] opacity-20 rounded-sm">
+              <p className="uppercase tracking-[0.5em] text-xs">No assets recorded in this vault.</p>
             </div>
           )}
         </div>

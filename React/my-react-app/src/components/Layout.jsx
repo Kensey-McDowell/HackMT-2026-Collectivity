@@ -65,7 +65,12 @@ export default function Layout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const avatarUrl = user ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}` : "";
+  // Use PocketBase file URL if avatar exists, otherwise fallback to DiceBear
+  const avatarUrl = user?.avatar 
+    ? pb.files.getURL(user, user.avatar) 
+    : user 
+      ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}` 
+      : "";
 
   return (
     <div className="social-dashboard-wrapper">
@@ -110,7 +115,7 @@ export default function Layout() {
                 type="button"
               >
                 <span className="text-sm font-bold tracking-widest uppercase text-[var(--text-color)] group-hover:text-[var(--accent-color)] transition-colors">
-                  {user?.username}
+                  {user?.username || user?.email}
                 </span>
 
                 <div className="w-11 h-11 rounded-full border-2 border-[var(--border-color)] overflow-hidden transition-all group-hover:border-[var(--accent-color)]">
@@ -126,8 +131,7 @@ export default function Layout() {
                       className="account-item"
                       onClick={() => {
                         setOpen(false);
-                        // DYNAMIC CHANGE: Navigate to the specific user ID
-                        navigate(`/profile/`);
+                        navigate(`/profile/${user.id}`);
                       }}
                     >
                       Account
@@ -149,10 +153,10 @@ export default function Layout() {
                         className="account-item"
                         onClick={() => {
                           setOpen(false);
-                          navigate("/admin");
+                          window.open('http://127.0.0.1:8090/_/', '_blank');
                         }}
                       >
-                        Admin
+                        Admin Panel
                       </button>
                     )}
 

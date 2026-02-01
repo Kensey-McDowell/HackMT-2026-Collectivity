@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './CreateCollectible.css';
-import { addCollectible, connectWallet } from '../js/testTransaction.js';
 import pb from '../lib/pocketbase';
 
 const PB_COLLECTABLES = 'collectables';
@@ -28,9 +27,8 @@ export default function CreateCollectible() {
   const [tagSearch, setTagSearch] = useState(''); 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [successTxHash, setSuccessTxHash] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Check if a user is currently signed into PocketBase
   const currentUser = pb.authStore.model;
 
   const handleFileChange = (e) => {
@@ -53,9 +51,8 @@ export default function CreateCollectible() {
 
   const handleImportToVault = async () => {
     setError(null);
-    setSuccessTxHash(null);
+    setShowSuccess(false);
     
-    // 1. Validate Auth State
     if (!pb.authStore.isValid || !currentUser) {
       setError('No active session found. Please sign in first.');
       return;
@@ -64,65 +61,43 @@ export default function CreateCollectible() {
     if (!formData.name.trim()) return setError('Collectible name is required.');
     if (!formData.category) return setError('Please select a category.');
 
-    const categoryIndex = categoryPool.indexOf(formData.category);
     const priceRaw = parseFloat(String(formData.value).replace(/[$,]/g, '').trim()) || 0;
     const price = Math.round(priceRaw);
 
     setIsSubmitting(true);
 
     try {
-      // 2. Execute Blockchain Transaction
-      const { uniqueId, hash } = await addCollectible(
-        null,
-        formData.name.trim(),
-        formData.description.trim(),
-        categoryIndex,
-        0,
-        price
-      );
-
-      // 3. Sync with PocketBase
+      // Create FormData for PocketBase (handles files and text fields)
       const recordId = randomPbId();
       const fd = new FormData();
       
-      // Mapping to your specific DB columns
       fd.append('id', recordId);
       fd.append('name', formData.name.trim());
       fd.append('description', formData.description.trim());
       fd.append('estimated_value', price); 
       fd.append('year', Number(formData.year) || 0);
-      fd.append('tx_hash', hash);
-      fd.append('unique_id', uniqueId);
-      
-      // Attach the PocketBase User ID
       fd.append('created_by', currentUser.id); 
-      
-      // Categories and Tags
       fd.append('category', formData.category);
-      // If tags field is a JSON/Text type in your DB:
       fd.append('tags', JSON.stringify(formData.tags));
 
       if (formData.images?.length) {
         formData.images.forEach((file) => fd.append('images', file, file.name));
       }
 
-      // 4. Create Record
+      // Direct write to PocketBase
       await pb.collection(PB_COLLECTABLES).create(fd);
 
-      setSuccessTxHash(hash);
+      setShowSuccess(true);
       setFormData({ name: '', description: '', year: '', value: '', category: '', tags: [], images: [] });
       
     } catch (err) {
       console.error("Vault Error:", err);
-      // Handle potential CORS or Network issues
-      const msg = err?.data?.message ?? err?.message ?? 'Connection failed. Check CORS settings.';
+      const msg = err?.data?.message ?? err?.message ?? 'Failed to secure asset in database.';
       setError(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const SEPOLIA_ETHERSCAN = 'https://sepolia.etherscan.io/tx';
 
   return (
     <div className="product-container h-full max-h-full overflow-hidden box-border bg-[#0a0a0a] text-white flex flex-row p-8 pb-8 gap-8">
@@ -263,25 +238,17 @@ export default function CreateCollectible() {
           disabled={isSubmitting}
           className="w-full py-5 mt-4 border border-[var(--accent-color)] text-[var(--accent-color)] uppercase tracking-[0.5em] text-[10px] font-black hover:bg-[var(--accent-color)] hover:text-black transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Securing Ledger…' : 'Import to Vault'}
+          {isSubmitting ? 'Securing Entry…' : 'Import to Vault'}
         </button>
       </aside>
 
       {/* Success modal */}
-      {successTxHash && (
-        <div className="create-success-overlay" onClick={() => setSuccessTxHash(null)}>
+      {showSuccess && (
+        <div className="create-success-overlay" onClick={() => setShowSuccess(false)}>
           <div className="create-success-modal" onClick={e => e.stopPropagation()}>
             <h2 className="create-success-title">Vaulting Complete</h2>
-            <p className="create-success-text">Metadata synced with Owner ID: {currentUser.id}</p>
-            <a
-              href={`${SEPOLIA_ETHERSCAN}/${successTxHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="create-success-link"
-            >
-              Verify on Blockchain →
-            </a>
-            <button type="button" className="create-success-dismiss" onClick={() => setSuccessTxHash(null)}>
+            <p className="create-success-text">Asset metadata secured under Owner ID: {currentUser.id}</p>
+            <button type="button" className="create-success-dismiss" onClick={() => setShowSuccess(false)}>
               Done
             </button>
           </div>

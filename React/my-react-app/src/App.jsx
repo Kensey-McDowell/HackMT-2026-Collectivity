@@ -12,7 +12,6 @@ import { SettingsProvider, useSettings } from "./context/SettingsContext";
 import { AuthModalProvider, useAuthModal } from "./context/AuthModalContext.jsx";
 
 import "./pages/theme.css";
-
 import Layout from "./components/Layout.jsx";
 import HomePage from "./pages/home.jsx";
 import IntroPage from "./pages/intro.jsx";
@@ -53,7 +52,6 @@ function RequireAuth({ children }) {
   const { openLogin } = useAuthModal();
 
   if (!isLoggedIn) {
-    // ✅ pop modal and bounce to a safe background route
     openLogin(location.pathname);
     return <Navigate to="/home" replace />;
   }
@@ -104,9 +102,9 @@ function ThemedApp() {
               }
             />
 
-            {/* ✅ PROTECTED */}
+            {/* PROTECTED PROFILE ROUTE WITH USERID PARAMETER */}
             <Route
-              path="/profile"
+              path="/profile/:userId"
               element={
                 <RequireAuth>
                   <ProfilePage />
@@ -136,7 +134,6 @@ function ThemedApp() {
 
             {/* Public inside layout */}
             <Route path="/faq" element={<FAQPage />} />
-            <Route path="/productpage" element={<ProductPage />} />
             <Route path="/social" element={<SocialPage />} />
             <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
             <Route path="/create" element={<CreateCollectible />} />
