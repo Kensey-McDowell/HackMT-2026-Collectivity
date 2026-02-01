@@ -8,11 +8,16 @@ import pb from '../lib/pocketbase';
 const PB_COLLECTABLES = 'collectables'; 
 const PB_ANALYTICS = 'user_analytics';
 
-// --- SUB-COMPONENT: FLOATING CHAT WINDOW ---
+// --- SUB-COMPONENT: DRAGGABLE FLOATING CHAT WINDOW ---
 const FloatingChat = ({ receiver, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef();
+
+  // Dragging State
+  const [position, setPosition] = useState({ x: 320, y: window.innerHeight - 420 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     async function loadMessages() {
@@ -45,6 +50,39 @@ const FloatingChat = ({ receiver, onClose }) => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // --- DRAG HANDLERS ---
+  const onMouseDown = (e) => {
+    setIsDragging(true);
+    setDragOffset({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
+    });
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e) => {
+      if (!isDragging) return;
+      setPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y
+      });
+    };
+
+    const onMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
@@ -63,16 +101,27 @@ const FloatingChat = ({ receiver, onClose }) => {
   const formatTime = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
   return (
-    <div className="fixed bottom-6 left-80 w-80 h-96 bg-[var(--bg-color)] border border-[var(--accent-color)]/40 shadow-2xl flex flex-col z-[100] animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="p-3 bg-white/5 flex justify-between items-center border-b border-white/5">
-        <div className="flex flex-col">
+    <div 
+      className="fixed w-80 h-96 bg-[var(--bg-color)] border border-[var(--accent-color)]/40 shadow-2xl flex flex-col z-[100] select-none"
+      style={{ 
+        left: `${position.x}px`, 
+        top: `${position.y}px`,
+        cursor: isDragging ? 'grabbing' : 'auto'
+      }}
+    >
+      {/* DRAGGABLE HEADER */}
+      <div 
+        onMouseDown={onMouseDown}
+        className="p-3 bg-white/5 flex justify-between items-center border-b border-white/5 cursor-grab active:cursor-grabbing"
+      >
+        <div className="flex flex-col pointer-events-none">
           <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--accent-color)]">Floating Terminal // {receiver.username || receiver.name}</span>
-          <span className="text-[7px] font-mono opacity-40 uppercase tracking-tighter">Status: Secure Line</span>
+          <span className="text-[7px] font-mono opacity-40 uppercase tracking-tighter">Status: Secure Line // Drag to move</span>
         </div>
-        <button onClick={onClose} className="text-white/30 hover:text-white transition-opacity text-lg leading-none">×</button>
+        <button onClick={onClose} className="text-white/30 hover:text-white transition-opacity text-lg leading-none pointer-events-auto">×</button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide select-text">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex flex-col ${msg.sender === pb.authStore.model.id ? 'items-end' : 'items-start'}`}>
             <div className={`p-2 text-[10px] max-w-[85%] leading-relaxed ${
@@ -247,7 +296,6 @@ export default function SocialPage() {
     <div className="social-dashboard-wrapper">
       <div className="social-main-content-area w-full flex h-screen overflow-hidden">
         
-        {/* LEFT SIDEBAR - Increased to w-80 for a wider look */}
         <aside className="social-sidebar w-80 hidden lg:flex flex-col border-r border-[var(--border-color)]">
           <div className="p-6 flex-1 flex flex-col overflow-hidden">
             <SidebarNav />
@@ -260,7 +308,6 @@ export default function SocialPage() {
                       key={user.id} 
                       className={`flex items-center gap-4 px-4 py-3 border transition-all group w-full justify-start ${floatingChatUser?.id === user.id ? 'border-[var(--accent-color)]/50 bg-[var(--accent-color)]/5' : 'border-white/5 bg-white/5 hover:border-[var(--accent-color)]/30'}`}
                     >
-                      {/* PFP (Left) */}
                       <Link to={`/profile/${user.id}`} className="shrink-0">
                         <div className="w-10 h-10 rounded-full border border-[var(--accent-color)]/20 overflow-hidden">
                           <img 
@@ -271,7 +318,6 @@ export default function SocialPage() {
                         </div>
                       </Link>
 
-                      {/* NAME (Expanded Middle Area) */}
                       <div className="flex-1 flex flex-col overflow-hidden text-left min-w-0">
                         <Link to={`/profile/${user.id}`}>
                           <span className="text-[11px] uppercase tracking-[0.15em] font-bold text-white group-hover:text-[var(--accent-color)] transition-colors truncate block">
@@ -281,7 +327,6 @@ export default function SocialPage() {
                         <span className="text-[7px] opacity-30 font-mono italic uppercase tracking-widest">Authorized Collector</span>
                       </div>
                       
-                      {/* CHAT BUBBLE (Pinned Right) */}
                       <button 
                         onClick={() => setFloatingChatUser(user)}
                         className="p-2 opacity-20 hover:opacity-100 hover:text-[var(--accent-color)] transition-all shrink-0"
