@@ -106,10 +106,7 @@ export default function ChatWidget() {
                     role: "model",
                     content: 
                         answer + 
-                        (citations.length
-                            ? "\n\nSources:\n" +
-                            citations.map((c) => `- ${c.sourceId}: "${c.quote}"`).join("\n") : "") +
-                            (refused ? "\n\n(If you want, ask about a specfic term such as rarity)" : ""),
+                            (refused ? "\n\n(If you want, ask about a specfic term such as rarity. I'm currently only available to talk about the current page you're on.)" : ""),
                 }
             ]);
             //Catch any errors and report an issue to the user.
