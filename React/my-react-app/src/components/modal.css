@@ -17,4 +17,23 @@
   background: var(--secondary-bg);
   color: var(--text-color);
   box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+  color:white
+}
+
+.auth-field label{
+    color: white;
+}
+
+.auth-input{
+    color: black;
+}
+
+.input{
+    color: black;
+}
+
+.auth-button{
+    background-color: grey;
+    color: black !important;
+
 }

@@ -51,6 +51,10 @@
   height: 100%;
   overflow: hidden; /* Sidebar itself shouldn't scroll, inner parts should */
   flex-shrink: 0;
+  font-size: 100px;
+}
+.social-sidebar-title{
+  font-size: 100px;
 }
 
 /* --- THE GREY BOX (Center Column) --- */
