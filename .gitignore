@@ -1,2 +1,4 @@
 ai_connector/.env
 ai_connector/node_modules
+React/my-react-app/package.json
+pb_data/auxiliary.db

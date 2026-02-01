@@ -102,7 +102,7 @@ export default function Layout() {
                       className="account-item"
                       onClick={() => {
                         setOpen(false);
-                        navigate('/account');
+                        navigate('/profile');
                       }}
                       type="button"
                     >

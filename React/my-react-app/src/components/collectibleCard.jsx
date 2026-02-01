@@ -4,7 +4,24 @@ import './collectibleCard.css';
 // FIXED: Import ID_TO_STR to convert numbers to readable labels
 import { ID_TO_STR } from '../js/tags'; 
 
+  const STATUS_LABELS = {
+  0: "Verified",
+  1: "Not Verified",
+  2: "For Sale",
+  3: "Not For Sale"
+};
+
+const CATEGORY_LABELS = {
+  0: "Cards",
+  1: "Game Items",
+  2: "Military Items",
+  3: "Sneakers",
+  4: "Sports",
+}
+
 export default function CollectibleCard({ item }) {
+  const categoryLabel = CATEGORY_LABELS[item?.category];
+
   const [isClicked, setIsClicked] = useState(false);
   const navigate = useNavigate(); 
 
@@ -56,7 +73,7 @@ export default function CollectibleCard({ item }) {
           {item.collectible_name}
         </p>
         <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--accent-color)] opacity-80 mb-3">
-          {item.collectionName}
+          {categoryLabel}
         </p>
 
       {/* TAGS SECTION */}
