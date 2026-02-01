@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom'; // 1. Import the hook
-
-import { printAllCollectibles } from '../js/testTransaction.js';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import pb from '../lib/pocketbase';
 import './ProductPage.css';
-import { ID_TO_STR } from '../js/tags';
 
 const PB_COLLECTABLES = 'collectables';
 
@@ -16,63 +12,49 @@ const STATUS_LABELS = {
   3: "Not For Sale"
 };
 
-const CATEGORY_LABELS = {
-  0: "Cards",
-  1: "Game Items",
-  2: "Military Items",
-  3: "Sneakers",
-  4: "Sports",
-}
-
 export default function ProductPage() {
-  const navigate = useNavigate(); // <-- ADD THIS LINE
-
-  const { itemIndex } = useParams();
+  const navigate = useNavigate();
+  const { itemIndex } = useParams(); // This is now the record ID (e.g., "76p87dy234")
   const [product, setProduct] = useState(null);
   const [productImageUrl, setProductImageUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const statusLabel = STATUS_LABELS[product?.status];
-  const categoryLabel = CATEGORY_LABELS[product?.category];
-  // Define missing variables to prevent crash
+  const statusLabel = STATUS_LABELS[product?.status] || "Verified";
+  const categoryLabel = product?.expand?.category?.name || "Uncategorized";
 
-    const handleTagClick = (tagLabel) => {
-       navigate('/social', { state: { filterTag: tagLabel } });
+  const handleTagClick = (tagLabel) => {
+    navigate('/social', { state: { filterTag: tagLabel } });
   };
-
-  const isLoggedIn = true;
-  const user = { username: "AUTHENTICATED_USER" };
 
   useEffect(() => {
     window.scrollTo(0, 0);
     async function loadProduct() {
-      if (itemIndex == null || itemIndex === '') return;
+      if (!itemIndex) return;
+      
       try {
         setIsLoading(true);
-        setProductImageUrl(null);
-        const allItems = await printAllCollectibles();
         
-        // Match the ID from URL to the 'index' in your blockchain data
-        const foundProduct = allItems.find(i =>
-          String(i.index).toLowerCase() === String(itemIndex).toLowerCase()
-        );
-        setProduct(foundProduct);
+        // FETCH UPDATE: Use getOne for a direct ID lookup
+        const record = await pb.collection(PB_COLLECTABLES).getOne(itemIndex, {
+          expand: 'category,tags,created_by'
+        });
 
-        const uniqueIDValue = foundProduct?.unique_ID != null ? String(foundProduct.unique_ID) : '';
-        if (uniqueIDValue) {
-          try {
-            const row = await pb.collection(PB_COLLECTABLES).getFirstListItem(`unique_id = "${uniqueIDValue.replace(/"/g, '\\"')}"`);
-            console.log('Row:', row);
-            if (row?.images?.length) {
-              setProductImageUrl(pb.files.getUrl(row, row.images[0]));
-            }
-          } catch (pbErr) {
-            console.warn('ProductPage: PocketBase image not found for unique_id', uniqueIDValue, pbErr);
-            setProductImageUrl(null);
-          }
+        const mappedProduct = {
+          ...record,
+          collectible_name: record.name,
+          price: record.estimated_value,
+          ownership: record.expand?.created_by?.name || record.expand?.created_by?.email || "Unknown Owner",
+          displayTags: record.expand?.tags || []
+        };
+
+        setProduct(mappedProduct);
+
+        if (record.images?.length) {
+          setProductImageUrl(pb.files.getURL(record, record.images[0]));
         }
       } catch (err) {
         console.error("Load failed:", err);
+        setProduct(null);
       } finally {
         setIsLoading(false);
       }
@@ -80,7 +62,7 @@ export default function ProductPage() {
     loadProduct();
   }, [itemIndex]);
 
-  if (isLoading) return <div className="loading-screen">Accessing Smart Contract...</div>;
+  if (isLoading) return <div className="loading-screen">Accessing Secure Vault...</div>;
 
   if (!product) {
     return (
@@ -94,128 +76,101 @@ export default function ProductPage() {
     );
   }
 
-  
-  // switch(product.status){
-  //   case 0:
-  //     product.status = "Verified"
-  //     break;
-  //   case 1:
-  //     product.status = "Not Verified"
-  //     break;
-  //   case 2:
-  //     product.status = "For sale"
-  //     break;
-  //   case 3:
-  //     product.status = "Not for sale"
-  //     break;
-  // }
-
-
-
-
   return (
-    <>
-      <div className="product-container">
-        {/* LEFT PANEL: Visuals & Technicals */}
-        <aside className="panel-visuals">
-          <div className="visuals-top-stack">
-            <div className="hero-image-aligned">
-              {productImageUrl ? (
-                <img src={productImageUrl} alt={product.collectible_name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex items-center justify-center h-full w-full uppercase tracking-[0.5em] text-[var(--border-color)] font-bold text-[10px]">
-                  Asset View
-                </div>
-              )}
+    <div className="product-container">
+      <aside className="panel-visuals">
+        <div className="visuals-top-stack">
+          <div className="hero-image-aligned">
+            {productImageUrl ? (
+              <img src={productImageUrl} alt={product.collectible_name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="flex items-center justify-center h-full w-full uppercase tracking-[0.5em] text-[var(--border-color)] font-bold text-[10px]">
+                Asset View
+              </div>
+            )}
+          </div>
+          <div className="thumb-scroller-aligned">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="thumb-box-aligned flex items-center justify-center uppercase text-[10px] tracking-widest text-[var(--border-color)]">
+                Pic
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="info-technical-grid">
+          <div className="tech-row">
+            <div className="flex flex-col">
+              <span className="label-gold-dim">Asset Status</span>
+              <span className="tech-value text-green-400">{statusLabel}</span>
             </div>
-            <div className="thumb-scroller-aligned">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="thumb-box-aligned flex items-center justify-center uppercase text-[10px] tracking-widest text-[var(--border-color)]">
-                  Pic
-                </div>
-              ))}
+            <div className="flex flex-col text-right">
+              <span className="label-gold-dim">Market Value</span>
+              <span className="tech-value text-[var(--accent-color)] font-bold">$ {Number(product.price).toLocaleString()}</span>
             </div>
           </div>
-
-          <div className="info-technical-grid">
-            <div className="tech-row">
-              <div className="flex flex-col">
-                <span className="label-gold-dim">Asset Status</span>
-                <span className="tech-value text-green-400">{statusLabel}</span>
-              </div>
-              <div className="flex flex-col text-right">
-                <span className="label-gold-dim">Market Value</span>
-                <span className="tech-value text-[var(--accent-color)] font-bold">$ {Number(product.price).toLocaleString()}</span>
-              </div>
+          <div className="tech-row border-b-0">
+            <div className="flex flex-col">
+              <span className="label-gold-dim">Owner</span>
+              <span className="tech-value">{product.ownership}</span>
             </div>
-            <div className="tech-row border-b-0">
-              <div className="flex flex-col">
-                <span className="label-gold-dim">Owner</span>
-                <span className="tech-value">{product.ownership}</span>
+          </div>
+        </div>
+      </aside>
+
+      <main className="panel-info">
+        <header className="product-header">
+          <h2 className="product-title">{product.collectible_name}</h2>
+          <div className="header-meta-row">
+            <div className="meta-stack">
+              <span className="label-gold">Category</span>
+              <span className="category-text">{categoryLabel}</span>
+            </div>
+            <div className="meta-stack text-right items-end">
+              <span className="label-gold">Tags</span>
+              <div className="tag-cloud-inline">
+                {product.displayTags.map((tagRecord) => (
+                  <button 
+                    key={tagRecord.id} 
+                    onClick={() => handleTagClick(tagRecord.name)}
+                    className="tag-item transform transition-transform duration-300 hover:scale-110"
+                  >
+                    {tagRecord.name}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </aside>
+        </header>
 
-        {/* RIGHT PANEL: Info & History */}
-        <main className="panel-info">
-          <header className="product-header">
-            <h2 className="product-title">{product.collectible_name}</h2>
-            <div className="header-meta-row">
-              <div className="meta-stack">
-                <span className="label-gold">Category</span>
-                <span className="category-text">{categoryLabel}</span>
+        <div className="description-box">
+          <span className="label-gold block mb-2">Item Description</span>
+          <p className="description-text">
+            {product.description || "No description provided for this asset."}
+          </p>
+        </div>
+
+        <div className="history-section">
+          <span className="label-gold mb-4 block">Transaction History</span>
+          <div className="history-scroll-container">
+            <div className="history-row">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest">Original Entry</span>
+                <span className="text-[10px] opacity-40 font-mono">{product.ownership}</span>
               </div>
-              <div className="meta-stack text-right items-end">
-                <span className="label-gold">Tags</span>
-                <div className="tag-cloud-inline">
-                  {/* Dynamic Mapping from Blockchain Integer to Enum String */}
-                  {[product.tag].flat().map((tagId, index) => {
-                    // Prevent rendering if the tag data is missing
-                    if (tagId === undefined || tagId === null) return null;
-
-                    return (
-                     <button 
-                        key={index} 
-                        onClick={() => handleTagClick(ID_TO_STR[tagId])}
-                        className="tag-item transform transition-transform duration-300 hover:scale-110"
-                      >
-                        {ID_TO_STR[tagId] || `#Item_${tagId}`}
-                      </button>
-                      
-                    );
-                  })}
-                </div>
+              <div className="text-right flex flex-col gap-1">
+                <span className="text-[10px] opacity-40">
+                  {new Date(product.created).toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                  }).toUpperCase()}
+                </span>
               </div>
             </div>
-          </header>
-
-          <div className="description-box">
-            <span className="label-gold block mb-2">Item Description</span>
-            <p className="description-text">
-              {product.description || "No description provided for this asset."}
-            </p>
           </div>
-
-          <div className="history-section">
-            <span className="label-gold mb-4 block">Transaction History</span>
-            <div className="history-scroll-container">
-              {[1].map((item) => (
-                <div key={item} className="history-row">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Owner</span>
-                    <span className="text-[10px] opacity-40 font-mono">{product.ownership}</span>
-                  </div>
-                  <div className="text-right flex flex-col gap-1">
-                    
-                    <span className="text-[10px] opacity-40">24 OCT 2025</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </main>
-      </div>
-    </>
+        </div>
+      </main>
+    </div>
   );
 }
