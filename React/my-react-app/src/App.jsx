@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { SettingsProvider, useSettings } from "./context/SettingsContext";
-import "./pages/settings.css";
+import "./pages/theme.css";
 
 import Layout from "./components/Layout.jsx";
 import HomePage from "./pages/home.jsx";
@@ -15,6 +15,7 @@ import SocialPage from "./pages/social.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CreateCollectible from "./pages/CreateCollectible.jsx";
 import ChatWidget from "./ChatWidget.jsx";
+import ClickSpark from "./components/ClickSpark";
 
 function ThemedApp() {
   const { theme, fontSize } = useSettings();
@@ -23,21 +24,64 @@ function ThemedApp() {
     <div className={`theme-${theme} font-${fontSize}`} style={{ minHeight: "100vh" }}>
       <Router>
         <ChatWidget />
+
         <Routes>
           <Route path="/intro" element={<IntroPage />} />
-          <Route path="/registration" element={<RegistrationPage />} />  
-          <Route path="/profile" element={<ProfilePage />} />\
-          
+          <Route path="/registration" element={<RegistrationPage />} />
+
+          <Route
+            path="/profile"
+            element={
+              <ClickSpark>
+                <ProfilePage />
+              </ClickSpark>
+            }
+          />
+
           <Route element={<Layout />}>
-            <Route path="/social" element={<SocialPage />} />
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+
+            <Route
+              path="/about"
+              element={
+                <ClickSpark>
+                  <AboutPage />
+                </ClickSpark>
+              }
+            />
+
+            <Route
+              path="/settings"
+              element={
+                <ClickSpark>
+                  <SettingsPage />
+                </ClickSpark>
+              }
+            />
+
             <Route path="/admin" element={<AdminPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
+
+            <Route
+              path="/faq"
+              element={
+                <ClickSpark>
+                  <FAQPage />
+                </ClickSpark>
+              }
+            />
+
+            <Route
+              path="/social"
+              element={
+                <ClickSpark>
+                  <SocialPage />
+                </ClickSpark>
+              }
+            />
+
             <Route path="/productpage" element={<ProductPage />} />
+            <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
             <Route path="/create" element={<CreateCollectible />} />
           </Route>
         </Routes>
