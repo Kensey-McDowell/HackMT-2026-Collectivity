@@ -1,5 +1,5 @@
 import React from 'react';
-import './about.css';
+import './index.css';
 import CatPic from '../assets/images/TestPic.jpeg';
 import DogPic from '../assets/images/TestPic2.jpeg';
 
