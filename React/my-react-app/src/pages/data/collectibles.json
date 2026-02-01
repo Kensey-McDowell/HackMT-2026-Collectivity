@@ -1,5 +1,5 @@
 {
-    "exported_at": "2026-01-31T17:41:05.712960",
+    "exported_at": "2026-01-31T23:03:40.308186",
     "count": 21,
     "items": [
         {
@@ -239,17 +239,14 @@
         {
             "category": "Wardrobe",
             "sub_category": "Vintage",
-            "name": null,
-            "description": null,
-            "owner": null,
+            "name": "Vintage 80's Military Duffle Bag",
+            "description": "Authentic Flyer's Aviator Duffle Bag. Good condition",
+            "owner": "TheOneStitch",
             "status": null,
             "history": null,
-            "price": null,
-            "url_for_pic": null,
-            "valid": false,
-            "errors": [
-                "name"
-            ]
+            "price": 35,
+            "url_for_pic": "https://lh3.google.com/gg-dl/AOI_d__ft9DR6tZKYreAipeG87-cLcXSkh3B1WeominaTZzXtc6wUGFr5kwz2gM0Ju9mO5IP2GPJ2fUwqSrPEQJ3lXTtKppeVgfO7yqt6BPXYAPtjUrjf0mjBZsnm-XpvOVar72TRC4aU_QW_8Uvfr7X4x8yb67IeaVI6Vjh69pHP-cVvFbQ=s1024-rj",
+            "valid": true
         },
         {
             "category": "Wardrobe",
