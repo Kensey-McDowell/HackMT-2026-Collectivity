@@ -6,6 +6,21 @@ import { printAllCollectibles } from '../js/testTransaction.js';
 import './productpage.css';
 import { ID_TO_STR } from '../js/tags'; // Import your mapping
 
+  const STATUS_LABELS = {
+  0: "Verified",
+  1: "Not Verified",
+  2: "For Sale",
+  3: "Not For Sale"
+};
+
+const CATEGORY_LABELS = {
+  0: "Cards",
+  1: "Game Items",
+  2: "Military Items",
+  3: "Sneakers",
+  4: "Sports",
+}
+
 export default function ProductPage() {
   const navigate = useNavigate(); // <-- ADD THIS LINE
 
@@ -13,6 +28,8 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const statusLabel = STATUS_LABELS[product?.status];
+  const categoryLabel = CATEGORY_LABELS[product?.category];
   // Define missing variables to prevent crash
 
     const handleTagClick = (tagLabel) => {
@@ -21,7 +38,7 @@ export default function ProductPage() {
 
 
   const isLoggedIn = true; 
-  const user = { username: "AUTHENTICATED_USER" };
+  const user = { username: "AUTHENTICATED_USER" };  
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -59,6 +76,25 @@ export default function ProductPage() {
     );
   }
 
+  
+  // switch(product.status){
+  //   case 0:
+  //     product.status = "Verified"
+  //     break;
+  //   case 1:
+  //     product.status = "Not Verified"
+  //     break;
+  //   case 2:
+  //     product.status = "For sale"
+  //     break;
+  //   case 3:
+  //     product.status = "Not for sale"
+  //     break;
+  // }
+
+
+
+
   return (
     <>
       <div className="product-container">
@@ -87,7 +123,7 @@ export default function ProductPage() {
               </div>
               <div className="flex flex-col text-right">
                 <span className="label-gold-dim">Asset Status</span>
-                <span className="tech-value text-green-400">Available For Sale</span>
+                <span className="tech-value text-green-400">{statusLabel}</span>
               </div>
             </div>
             <div className="tech-row border-b-0">
@@ -110,7 +146,7 @@ export default function ProductPage() {
             <div className="header-meta-row">
               <div className="meta-stack">
                 <span className="label-gold">Category</span>
-                <span className="category-text">{product.category}</span>
+                <span className="category-text">{categoryLabel}</span>
               </div>
               <div className="meta-stack text-right items-end">
                 <span className="label-gold">Tags</span>
@@ -146,14 +182,14 @@ export default function ProductPage() {
           <div className="history-section">
             <span className="label-gold mb-4 block">Transaction History</span>
             <div className="history-scroll-container">
-              {[1, 2, 3, 4, 5].map((item) => (
+              {[1].map((item) => (
                 <div key={item} className="history-row">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Sale & Transfer</span>
-                    <span className="text-[10px] opacity-40 font-mono">0x71C...8241</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Owner</span>
+                    <span className="text-[10px] opacity-40 font-mono">{product.ownership}</span>
                   </div>
                   <div className="text-right flex flex-col gap-1">
-                    <span className="block text-sm text-[var(--accent-color)] font-bold">£11,200.00</span>
+                    
                     <span className="text-[10px] opacity-40">24 OCT 2025</span>
                   </div>
                 </div>

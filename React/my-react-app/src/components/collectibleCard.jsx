@@ -1,29 +1,25 @@
-import { useNavigate } from 'react-router-dom'; // 1. Import the hook
+import { useNavigate } from 'react-router-dom'; 
 import { useState } from 'react';
 import './collectibleCard.css'; 
-
-
+// FIXED: Import ID_TO_STR to convert numbers to readable labels
+import { ID_TO_STR } from '../js/tags'; 
 
 export default function CollectibleCard({ item }) {
   const [isClicked, setIsClicked] = useState(false);
-  const navigate = useNavigate(); // 2. Initialize the navigator
-
-  
+  const navigate = useNavigate(); 
 
   const handleClick = (e) => {
     if (isClicked) return;
-    if (e.target.closest('button')) return; // Don't navigate if clicking the bookmark
+    // Don't navigate if clicking the bookmark button
+    if (e.target.closest('button')) return; 
 
     setIsClicked(true);
 
-    // 3. The Delay Logic
+    // The Delay Logic to match your CSS animation
     setTimeout(() => {
-      // Navigates to the item page using the item's ID
       navigate(`/ProductPage/${item.index}`); 
-      
-      // Reset state in case they hit the 'Back' button later
       setIsClicked(false);
-    }, 600); // Matches your pulse animation duration
+    }, 600); 
   };
 
   return (
@@ -35,8 +31,8 @@ export default function CollectibleCard({ item }) {
       
       {/* 1. THE IMAGE */}
       <img 
-        src={item.imageUrl} 
-        alt={item.collectable} 
+        src={"https://cdn.pixabay.com/photo/2018/11/19/05/53/animal-3824672_640.jpg"} 
+        alt={item.collectible_name} 
         className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 
           ${isClicked ? 'scale-105 opacity-40 blur-[2px]' : 'group-hover:scale-110'}`} 
       />
@@ -63,30 +59,43 @@ export default function CollectibleCard({ item }) {
           {item.collectionName}
         </p>
 
-        {/* TAGS */}
-        <div className="flex flex-wrap gap-1.5">
-          {item.tags && item.tags.slice(0, 8).map((tag, index) => (
-            <div 
-              key={index} 
-              className={`relative w-14 h-8 ${index >= 4 ? 'hidden group-hover:block' : 'block'}`}
-            >
-              <div
-                className={`
-                  absolute top-0 left-0 min-w-full w-full h-full 
-                  bg-[var(--bg-color)]/80 backdrop-blur-sm text-[var(--accent-color)] text-[8px] 
-                  font-bold uppercase rounded-sm border border-[var(--border-color)] 
-                  px-1.5 flex items-center justify-center truncate transition-all
-                  ${isClicked ? 'opacity-0 scale-50' : 'opacity-100'}
-                `}
-              >
-                {tag}
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* TAGS SECTION */}
+          <div className="flex flex-wrap gap-1.5">
+            {/* 1. We check 'tag' and 'tags'. We .filter(Boolean) to remove nulls/undefined */}
+            {[item.tag, item.tags].flat().filter(t => t !== undefined && t !== null).slice(0, 8).map((tagValue, index) => {
+              
+              // 2. Ensure the ID is a number (blockchain often returns strings like "1")
+              const numericId = Number(tagValue);
+              
+              // 3. Lookup the label
+              const tagLabel = ID_TO_STR[numericId];
+
+              // 4. Only render if we actually found a label or a valid number
+              if (!tagLabel && isNaN(numericId)) return null;
+
+              return (
+                <div 
+                  key={index} 
+                  className={`relative w-14 h-8 ${index >= 4 ? 'hidden group-hover:block' : 'block'}`}
+                >
+                  <div
+                    className={`
+                      absolute top-0 left-0 min-w-full w-full h-full 
+                      bg-[var(--bg-color)]/80 backdrop-blur-sm text-[var(--accent-color)] text-[8px] 
+                      font-bold uppercase rounded-sm border border-[var(--border-color)] 
+                      px-1.5 flex items-center justify-center truncate transition-all
+                      ${isClicked ? 'opacity-0 scale-50' : 'opacity-100'}
+                    `}
+                  >
+                    {tagLabel || `#ID_${numericId}`}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
       </footer>
 
-      {/* 5. THE PULSE CORE */}
+      {/* 5. THE PULSE CORE (Visual feedback on click) */}
       {isClicked && (
         <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
           <div className="w-full h-full bg-[var(--accent-color)]/30 animate-ping" />

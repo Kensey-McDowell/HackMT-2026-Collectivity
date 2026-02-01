@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { printAllCollectibles } from '../js/testTransaction.js';
 import CollectibleCard from '../components/collectibleCard'; 
 import './profile.css'; 
+import { UI_TAG_MAP } from '../js/tags'; 
+
 
 export default function ProfilePage() {
   const [items, setItems] = useState([]);
@@ -69,7 +71,7 @@ export default function ProfilePage() {
           </div>
           
           <div className="flex-1 text-center md:text-left">
-            <span className="text-[10px] uppercase tracking-[0.4em] opacity-50 block mb-2">Authenticated Collector</span>
+            <span className="text-[10x] uppercase tracking-[0.4em] opacity-50 block mb-2">Authenticated Collector</span>
             <h1 className="text-5xl md:text-6xl font-medium italic tracking-tight mb-6 text-[var(--text-color)] drop-shadow-lg">
               {user.username}
             </h1>

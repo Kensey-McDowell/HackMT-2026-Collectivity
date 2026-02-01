@@ -75,7 +75,7 @@ export default function SocialPage() {
                 filteredItems.map((item) => (
                   <Link 
                     key={item.unique_ID || item.index} 
-                    to={`/product/${item.index}`}
+                    
                     className="transform transition-transform duration-300 hover:scale-105 active:scale-95"
                   >
                     <CollectibleCard item={item} />

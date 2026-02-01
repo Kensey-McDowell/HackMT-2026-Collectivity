@@ -14,8 +14,9 @@ if (!CONTRACT_ADDRESS || !SEPOLIA_RPC) {
     `Missing env: ${missing.join(', ')}. Add them to .env in the React app root (same folder as package.json) and restart the dev server (npm run dev).`
   );
 }
-const ABI = [
-    
+const ABI = 
+	
+	[
 	{
 		"inputs": [
 			{
@@ -24,8 +25,18 @@ const ABI = [
 				"type": "string"
 			},
 			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
 				"internalType": "int256",
-				"name": "tag",
+				"name": "category",
+				"type": "int256"
+			},
+			{
+				"internalType": "int256",
+				"name": "status",
 				"type": "int256"
 			},
 			{
@@ -56,8 +67,20 @@ const ABI = [
 			},
 			{
 				"indexed": false,
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"indexed": false,
 				"internalType": "int256",
-				"name": "tag",
+				"name": "category",
+				"type": "int256"
+			},
+			{
+				"indexed": false,
+				"internalType": "int256",
+				"name": "status",
 				"type": "int256"
 			},
 			{
@@ -97,8 +120,18 @@ const ABI = [
 				"type": "string"
 			},
 			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
 				"internalType": "int256",
-				"name": "tag",
+				"name": "category",
+				"type": "int256"
+			},
+			{
+				"internalType": "int256",
+				"name": "status",
 				"type": "int256"
 			},
 			{
@@ -130,6 +163,8 @@ const ABI = [
 	}
 
 ]
+
+
 
 
 // function getAbi() {
@@ -181,21 +216,29 @@ export async function printAllCollectibles(contract) {
     contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
   }
   const length = await contract.get_array_length();
+  const totalLength = Number(length);
 
   console.log(`Total collectibles: ${length.toString()}`);
 
   const allCollectibles = [];
 
-  for (let i = 0; i < length; i++) {
+  for (let i = 0; i < totalLength; i++) {
     const c = await contract.collectibles_array(i);
 
+
+	// const tags_input = await contract.print_tag(i);
     const collectible = {
-      index: i,
-      unique_ID: c[0],
-      collectible_name: c[1],
-      tag: Number(c[2]),
-      ownership: c[3],
-      price: Number(c[4])
+		index: i,
+		unique_ID: c[0],
+		collectible_name: c[1],
+		description: c[2],
+
+		// tags: tags_input.map(t => t.toString()),
+
+		category: c[3].toString(), 
+		status: c[4].toString(),
+		ownership: c[5],
+		price: c[6].toString()
     };
 
     //console.log(collectible);
