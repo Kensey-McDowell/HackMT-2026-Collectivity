@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import PocketBase from "pocketbase";
 import collectiblesData from "./data/collectibles.json";
 
-
 /**
- * - Admin Panel 
- * - If VITE_PB_URL is set -> PocketBase mode (auth + CRUD)
- * - If not set -> Demo mode (local mock data + collectibles.json)
+ * Admin Panel (AUTH STRIPPED)
+ * - Always renders the full UI (no login screen).
+ * - If VITE_PB_URL is set -> loads from PocketBase (may still fail if PB rules require auth).
+ * - If not set OR PB fetch fails -> uses demo/local data.
  */
+
+/* ================= CONFIG ================= */
 
 const PB_CONFIG = {
   collections: {
@@ -15,7 +17,6 @@ const PB_CONFIG = {
     collectibles: "collectibles",
     events: "events",
   },
-  authMode: "admin", // "admin" (pb.admins) is easiest for hackathon admin panel
 };
 
 const DEMO_USERS = [
@@ -29,7 +30,7 @@ const DEMO_EVENTS = [
   { type: "TRANSFER", tokenId: 2, from: "0xC900...11a1", to: "0xB44c...2A10", block: 5523002, tx: "0x1e7d...8aa0" },
 ];
 
-/* ---------------- QuickChart helpers ---------------- */
+/* ================= QuickChart helpers ================= */
 
 function quickChartUrl(chartConfig, nonce = 0) {
   const encoded = encodeURIComponent(JSON.stringify(chartConfig));
@@ -72,7 +73,15 @@ function buildPopularTagsBarConfig(tags, counts) {
     type: "bar",
     data: {
       labels: tags,
-      datasets: [{ label: "Tag Count", data: counts, borderWidth: 1, backgroundColor: "#c5a367", borderColor: "#c5a367" }],
+      datasets: [
+        {
+          label: "Tag Count",
+          data: counts,
+          borderWidth: 1,
+          backgroundColor: "#c5a367",
+          borderColor: "#c5a367",
+        },
+      ],
     },
     options: {
       indexAxis: "y",
@@ -88,7 +97,7 @@ function buildPopularTagsBarConfig(tags, counts) {
   };
 }
 
-/* ---------------- Tag + Analytics helpers ---------------- */
+/* ================= Tag + Analytics helpers ================= */
 
 function normalizeTag(t) {
   return String(t || "")
@@ -138,11 +147,11 @@ function hashString(str) {
   return h >>> 0;
 }
 
+/* ================= PB helpers ================= */
+
 function getPBUrl() {
   return (import.meta.env.VITE_PB_URL || "").trim();
 }
-
-
 
 function mapPbRecord(rec) {
   return {
@@ -156,25 +165,17 @@ function toTokenId(item) {
   return item?.token_id ?? item?.tokenId ?? item?.tokenID ?? "—";
 }
 
-/* ---------------- Component ---------------- */
+/* ================= COMPONENT ================= */
 
 export default function AdminPage() {
   const pbUrl = getPBUrl();
   const pb = useMemo(() => (pbUrl ? new PocketBase(pbUrl) : null), [pbUrl]);
   const pbEnabled = Boolean(pb);
 
-
-
   const chain = "Sepolia";
   const contractAddress = "0xYourContractAddress";
 
   const [tab, setTab] = useState("dashboard");
-
-  // auth
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [loginUser, setLoginUser] = useState("");
-  const [loginPass, setLoginPass] = useState("");
-  const [authError, setAuthError] = useState("");
 
   // data
   const [users, setUsers] = useState(DEMO_USERS);
@@ -201,10 +202,6 @@ export default function AdminPage() {
   // charts
   const [chartNonce, setChartNonce] = useState(0);
 
-  // demo creds
-  const DEMO_ADMIN_USER = "alex";
-  const DEMO_ADMIN_PASS = "admin";
-
   const adminCount = users.filter((u) => String(u.role || "").toLowerCase() === "admin").length;
 
   function assertNotLastAdmin(target) {
@@ -216,46 +213,6 @@ export default function AdminPage() {
     return true;
   }
 
-  async function login() {
-    setAuthError("");
-    setOpError("");
-
-    if (!pbEnabled) {
-      if (loginUser.trim() === DEMO_ADMIN_USER && loginPass === DEMO_ADMIN_PASS) {
-        setLoggedIn(true);
-        setLoginUser("");
-        setLoginPass("");
-        return;
-      }
-      setAuthError(`Invalid credentials. (Demo: ${DEMO_ADMIN_USER}/${DEMO_ADMIN_PASS})`);
-      return;
-    }
-
-    try {
-      pb.autoCancellation(false);
-
-      if (PB_CONFIG.authMode === "admin") {
-        await pb.admins.authWithPassword(loginUser.trim(), loginPass);
-      } else {
-        await pb.collection(PB_CONFIG.collections.users).authWithPassword(loginUser.trim(), loginPass);
-      }
-
-      setLoggedIn(true);
-      setLoginUser("");
-      setLoginPass("");
-    } catch (e) {
-      setAuthError(e?.message || "Login failed. Check PocketBase URL/credentials.");
-    }
-  }
-
-  function logout() {
-    if (pbEnabled) pb.authStore.clear();
-    setLoggedIn(false);
-    setTab("dashboard");
-    setAuthError("");
-    setOpError("");
-  }
-
   async function loadUsers() {
     if (!pbEnabled) return;
     setLoadingUsers(true);
@@ -264,7 +221,10 @@ export default function AdminPage() {
       const list = await pb.collection(PB_CONFIG.collections.users).getList(1, 100, { sort: "-created" });
       setUsers(list.items.map(mapPbRecord));
     } catch (e) {
-      setOpError(e?.message || "Failed to load users.");
+      // IMPORTANT: no auth gate; just show demo if PB blocks you
+      console.error("loadUsers failed:", e);
+      setOpError(e?.message || "Failed to load users from PocketBase (using demo data).");
+      setUsers(DEMO_USERS);
     } finally {
       setLoadingUsers(false);
     }
@@ -278,7 +238,9 @@ export default function AdminPage() {
       const list = await pb.collection(PB_CONFIG.collections.collectibles).getList(1, 200, { sort: "-created" });
       setCollectibles(list.items.map(mapPbRecord));
     } catch (e) {
-      setOpError(e?.message || "Failed to load collectibles.");
+      console.error("loadCollectibles failed:", e);
+      setOpError(e?.message || "Failed to load collectibles from PocketBase (using local json).");
+      setCollectibles(Array.isArray(collectiblesData?.items) ? collectiblesData.items : []);
     } finally {
       setLoadingCollectibles(false);
     }
@@ -292,24 +254,22 @@ export default function AdminPage() {
       const list = await pb.collection(PB_CONFIG.collections.events).getList(1, 200, { sort: "-created" });
       setEvents(list.items.map(mapPbRecord));
     } catch (e) {
-      setOpError(e?.message || "Failed to load events.");
+      console.error("loadEvents failed:", e);
+      setOpError(e?.message || "Failed to load events from PocketBase (using demo events).");
+      setEvents(DEMO_EVENTS);
     } finally {
       setLoadingEvents(false);
     }
   }
 
+  // initial load if PB is configured
   useEffect(() => {
     if (!pbEnabled) return;
-    if (pb.authStore.isValid) setLoggedIn(true);
-  }, [pbEnabled, pb]);
-
-  useEffect(() => {
-    if (!pbEnabled || !loggedIn) return;
     void loadUsers();
     void loadCollectibles();
     void loadEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pbEnabled, loggedIn]);
+  }, [pbEnabled]);
 
   async function handleCreateUser() {
     const u = newUsername.trim();
@@ -319,7 +279,7 @@ export default function AdminPage() {
     setOpError("");
 
     if (!pbEnabled) {
-      const id = `u${Math.random().toString(16).slice(2)}`;
+      const id = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `u${Math.random().toString(16).slice(2)}`;
       setUsers((prev) => [{ id, username: u, wallet: w, role: "user", created: new Date().toISOString().slice(0, 10) }, ...prev]);
       setNewUsername("");
       setNewWallet("");
@@ -332,7 +292,8 @@ export default function AdminPage() {
       setNewUsername("");
       setNewWallet("");
     } catch (e) {
-      setOpError(e?.message || "Failed to create user.");
+      // no auth gate; still show UI
+      setOpError(e?.message || "Failed to create user (PocketBase rules may block this).");
     }
   }
 
@@ -353,7 +314,7 @@ export default function AdminPage() {
       const updated = await pb.collection(PB_CONFIG.collections.users).update(userId, { role: nextRole });
       setUsers((prev) => prev.map((u) => (u.id === userId ? mapPbRecord(updated) : u)));
     } catch (e) {
-      setOpError(e?.message || "Failed to update role.");
+      setOpError(e?.message || "Failed to update role (PocketBase rules may block this).");
     }
   }
 
@@ -375,7 +336,7 @@ export default function AdminPage() {
       await pb.collection(PB_CONFIG.collections.users).delete(userId);
       setUsers((prev) => prev.filter((u) => u.id !== userId));
     } catch (e) {
-      setOpError(e?.message || "Failed to remove user.");
+      setOpError(e?.message || "Failed to remove user (PocketBase rules may block this).");
     }
   }
 
@@ -416,6 +377,8 @@ export default function AdminPage() {
       return type.includes(q) || token.includes(q) || from.includes(q) || to.includes(q) || block.includes(q) || tx.includes(q);
     });
   }, [events, eventQuery]);
+
+  /* ================= ANALYTICS (RESTORED) ================= */
 
   const analytics = useMemo(() => {
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -470,77 +433,7 @@ export default function AdminPage() {
     [analytics.topTags, analytics.tagCounts, chartNonce]
   );
 
-  if (!loggedIn) {
-    return (
-      <div className="ap ap-loginShell">
-        <div className="ap-card ap-loginCard">
-          <div className="ap-stack">
-            <div>
-              <h2 className="ap-title">Admin Login</h2>
-              <p className="ap-helper">
-                {pbEnabled ? (
-                  <>PocketBase URL detected. Login authenticates against PocketBase ({PB_CONFIG.authMode}).</>
-                ) : (
-                  <>
-                    PocketBase not configured (set <span className="ap-mono">VITE_PB_URL</span>). Demo login:{" "}
-                    <span className="ap-mono">{DEMO_ADMIN_USER}</span> / <span className="ap-mono">{DEMO_ADMIN_PASS}</span>
-                  </>
-                )}
-              </p>
-            </div>
-
-            <div className="ap-field">
-              <div className="ap-label">{pbEnabled ? "Email / Username" : "Username"}</div>
-              <input
-                className="ap-input"
-                value={loginUser}
-                placeholder={pbEnabled ? "admin@example.com" : "Enter username"}
-                onChange={(e) => setLoginUser(e.target.value)}
-                onKeyDown={(e) => (e.key === "Enter" ? void login() : undefined)}
-              />
-            </div>
-
-            <div className="ap-field">
-              <div className="ap-label">Password</div>
-              <input
-                className="ap-input"
-                type="password"
-                value={loginPass}
-                placeholder="Enter password"
-                onChange={(e) => setLoginPass(e.target.value)}
-                onKeyDown={(e) => (e.key === "Enter" ? void login() : undefined)}
-              />
-            </div>
-
-            {authError ? <div className="ap-error">{authError}</div> : null}
-
-            <div className="ap-row">
-              <button className="ap-btn ap-btnPrimary" onClick={() => void login()} type="button">
-                Login
-              </button>
-
-              {!pbEnabled ? (
-                <button
-                  className="ap-btn ap-btnSecondary"
-                  onClick={() => {
-                    setLoginUser(DEMO_ADMIN_USER);
-                    setLoginPass(DEMO_ADMIN_PASS);
-                  }}
-                  type="button"
-                >
-                  Autofill
-                </button>
-              ) : null}
-            </div>
-
-            {pbEnabled ? (
-              <div className="ap-note">Tip: for hackathons, create a PocketBase admin and use that email/password here.</div>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  /* ================= UI ================= */
 
   return (
     <div className="ap ap-page">
@@ -569,8 +462,8 @@ export default function AdminPage() {
               Sync
             </button>
           ) : null}
-          <button className="ap-btn ap-btnSecondary" onClick={logout} type="button">
-            Logout
+          <button className="ap-btn ap-btnSecondary" onClick={() => setChartNonce((n) => n + 1)} type="button">
+            Refresh Charts
           </button>
         </div>
       </header>
@@ -624,6 +517,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
+              {/* ✅ ANALYTICS SECTION (RESTORED) */}
               <div className="ap-card">
                 <div className="ap-cardHeader">
                   <h3 className="ap-h3">Analytics</h3>
@@ -637,6 +531,7 @@ export default function AdminPage() {
                     <img className="ap-chartImg" src={trendingCategoriesUrl} alt="Trending category chart" />
                     <p className="ap-helper ap-mt8">Trending categories over time (stable demo trend).</p>
                   </div>
+
                   <div className="ap-smallCard">
                     <img className="ap-chartImg" src={popularTagsUrl} alt="Popular collectible tags chart" />
                     <p className="ap-helper ap-mt8">Top tags extracted from name/description/category fields.</p>
@@ -651,10 +546,15 @@ export default function AdminPage() {
               <div className="ap-cardHeader">
                 <div>
                   <h3 className="ap-h3">Users</h3>
-                  <p className="ap-helper">{pbEnabled ? "Manage users via PocketBase." : "Manage users (demo/local state)."}</p>
+                  <p className="ap-helper">{pbEnabled ? "Manage users via PocketBase (may be blocked by rules)." : "Manage users (demo/local state)."}</p>
                 </div>
 
-                <input className="ap-input ap-search" value={userQuery} placeholder="Search username / wallet / role…" onChange={(e) => setUserQuery(e.target.value)} />
+                <input
+                  className="ap-input ap-search"
+                  value={userQuery}
+                  placeholder="Search username / wallet / role…"
+                  onChange={(e) => setUserQuery(e.target.value)}
+                />
               </div>
 
               <div className="ap-grid2 ap-mt12">
@@ -739,10 +639,15 @@ export default function AdminPage() {
               <div className="ap-cardHeader">
                 <div>
                   <h3 className="ap-h3">Collectibles</h3>
-                  <p className="ap-helper">{pbEnabled ? "Loaded from PocketBase." : "Loaded from collectibles.json."}</p>
+                  <p className="ap-helper">{pbEnabled ? "Loaded from PocketBase (may be blocked by rules)." : "Loaded from collectibles.json."}</p>
                 </div>
 
-                <input className="ap-input ap-search" value={collectibleQuery} placeholder="Search token / name / owner / category…" onChange={(e) => setCollectibleQuery(e.target.value)} />
+                <input
+                  className="ap-input ap-search"
+                  value={collectibleQuery}
+                  placeholder="Search token / name / owner / category…"
+                  onChange={(e) => setCollectibleQuery(e.target.value)}
+                />
               </div>
 
               <div className="ap-tableWrap ap-mt12">
@@ -794,10 +699,15 @@ export default function AdminPage() {
               <div className="ap-cardHeader">
                 <div>
                   <h3 className="ap-h3">Events</h3>
-                  <p className="ap-helper">{pbEnabled ? "Loaded from PocketBase." : "Mock events for now."}</p>
+                  <p className="ap-helper">{pbEnabled ? "Loaded from PocketBase (may be blocked by rules)." : "Mock events for now."}</p>
                 </div>
 
-                <input className="ap-input ap-search" value={eventQuery} placeholder="Search type / token / tx / block…" onChange={(e) => setEventQuery(e.target.value)} />
+                <input
+                  className="ap-input ap-search"
+                  value={eventQuery}
+                  placeholder="Search type / token / tx / block…"
+                  onChange={(e) => setEventQuery(e.target.value)}
+                />
               </div>
 
               <div className="ap-tableWrap ap-mt12">
