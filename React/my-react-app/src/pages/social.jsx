@@ -3,7 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 import './social.css';
 import { printAllCollectibles } from '../js/testTransaction.js';
 import CollectibleCard from '../components/collectibleCard'; 
-import { UI_TAG_MAP } from '../js/tags'; 
+import { UI_TAG_MAP } from '../js/tags';
+import pb from '../lib/pocketbase';
+
+const PB_COLLECTABLES = 'collectables'; 
 
 export default function SocialPage() {
   const location = useLocation();
@@ -21,12 +24,25 @@ export default function SocialPage() {
     }
   }, [location]);
 
-  // Fetch Blockchain Data
+  // Fetch blockchain data, then GET PocketBase row per unique_id and set card image
   useEffect(() => {
     async function fetchData() {
       try {
         const data = await printAllCollectibles();
-        setCollectibles(Array.isArray(data) ? data : []);
+        const items = Array.isArray(data) ? data : [];
+        for (const item of items) {
+          const uniqueId = item.unique_ID != null ? String(item.unique_ID) : '';
+          if (!uniqueId) continue;
+          try {
+            const row = await pb.collection(PB_COLLECTABLES).getFirstListItem(`unique_id = "${uniqueId.replace(/"/g, '\\"')}"`);
+            if (row?.images?.length) {
+              item.imageUrl = pb.files.getUrl(row, row.images[0]);
+            }
+          } catch (_) {
+            // no row for this unique_id
+          }
+        }
+        setCollectibles(items);
       } catch (err) {
         console.error("Failed to fetch collectibles:", err);
       } finally {

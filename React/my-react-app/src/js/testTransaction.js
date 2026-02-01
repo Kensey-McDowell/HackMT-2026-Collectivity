@@ -217,9 +217,22 @@ export async function addCollectible(contract, collectible_name, description, ca
     Number(status),
     Number(price)
   );
-  await tx.wait();
+  const receipt = await tx.wait();
   console.log('Collectible added');
-  return tx;
+  let uniqueId = null;
+  try {
+    const log = receipt?.logs?.find((l) => l.address?.toLowerCase() === contract.target?.toLowerCase());
+    if (log) {
+      const parsed = contract.interface.parseLog({ topics: log.topics, data: log.data });
+      if (parsed?.name === 'Collectible_Added' && parsed.args?.unique_ID != null) {
+        uniqueId = parsed.args.unique_ID;
+      }
+    }
+  } catch (_) {}
+  if (uniqueId == null) uniqueId = tx.hash;
+  const hash = tx.hash;
+  console.log('Unique ID:', uniqueId, 'Tx hash:', hash);
+  return { uniqueId: uniqueId, hash };
 }
 
 /* Add multiple collectibles from a ledger (array of ledger-shaped objects). */

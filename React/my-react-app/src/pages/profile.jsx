@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { printAllCollectibles } from '../js/testTransaction.js';
-import CollectibleCard from '../components/collectibleCard'; 
-import './profile.css'; 
-import { UI_TAG_MAP } from '../js/tags'; 
+import CollectibleCard from '../components/collectibleCard';
+import pb from '../lib/pocketbase';
+import './profile.css';
+import { UI_TAG_MAP } from '../js/tags';
+
+const PB_COLLECTABLES = 'collectables'; 
 
 
 export default function ProfilePage() {
@@ -23,11 +26,23 @@ export default function ProfilePage() {
     async function loadUserInventory() {
       try {
         setIsLoading(true);
-        const allItems = await printAllCollectibles();
-        
-        // FILTER: Only show items where the current user is the 'ownership' address
-        // Note: For testing, you might want to show allItems until you have real wallet logic
-        setItems(allItems || []); 
+        const data = await printAllCollectibles();
+        const allItems = Array.isArray(data) ? data : [];
+        // Same as social page: GET PocketBase row per unique_id and set card image
+        for (const item of allItems) {
+          const uniqueId = item.unique_ID != null ? String(item.unique_ID) : '';
+          if (!uniqueId) continue;
+          try {
+            const row = await pb.collection(PB_COLLECTABLES).getFirstListItem(`unique_id = "${uniqueId.replace(/"/g, '\\"')}"`);
+            if (row?.images?.length) {
+              item.imageUrl = pb.files.getUrl(row, row.images[0]);
+            }
+          } catch (_) {
+            // no row for this unique_id
+          }
+        }
+        // FILTER: Only show items where the current user is the 'ownership' address (or all for testing)
+        setItems(allItems);
       } catch (error) {
         console.error("Failed to load inventory:", error);
       } finally {
