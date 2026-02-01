@@ -1,25 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import './CreateCollectible.css';
 import pb from '../lib/pocketbase';
 
 const PB_COLLECTABLES = 'collectables';
 
-function randomPbId() {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  return Array.from(crypto.getRandomValues(new Uint8Array(15)), (b) => chars[b % chars.length]).join('');
-}
-
 export default function CreateCollectible() {
-  const categoryPool = ["Cards", "Game Items", "Military Items", "Sneakers", "Sports"];
-  const tagPool = ["Rare", "Mint", "Signed", "Limited", "Antique", "Restored", "Original Box", "Auction Grade", "Provenanced"];
+  const navigate = useNavigate();
+  const [categoryPool, setCategoryPool] = useState([]);
+  const [tagPool, setTagPool] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     year: '',
     value: '',
-    category: '',
-    tags: [],
+    category: '', 
+    tags: [],     
     images: []
   });
 
@@ -31,23 +28,39 @@ export default function CreateCollectible() {
 
   const currentUser = pb.authStore.model;
 
+  useEffect(() => {
+    async function loadResources() {
+      try {
+        const [cats, tags] = await Promise.all([
+          pb.collection('categories').getFullList({ sort: 'name' }),
+          pb.collection('tags').getFullList({ sort: 'name' })
+        ]);
+        setCategoryPool(cats);
+        setTagPool(tags);
+      } catch (err) {
+        console.error("Failed to load schema resources:", err);
+      }
+    }
+    loadResources();
+  }, []);
+
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (formData.images.length + files.length > 4) return;
     setFormData({ ...formData, images: [...formData.images, ...files] });
   };
 
-  const toggleTag = (tag) => {
+  const toggleTag = (tagId) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags.includes(tag) 
-        ? prev.tags.filter(t => t !== tag) 
-        : [...prev.tags, tag]
+      tags: prev.tags.includes(tagId) 
+        ? prev.tags.filter(id => id !== tagId) 
+        : [...prev.tags, tagId]
     }));
   };
 
-  const filteredCats = categoryPool.filter(c => c.toLowerCase().includes(catSearch.toLowerCase()));
-  const filteredTags = tagPool.filter(t => t.toLowerCase().includes(tagSearch.toLowerCase()));
+  const filteredCats = categoryPool.filter(c => c.name.toLowerCase().includes(catSearch.toLowerCase()));
+  const filteredTags = tagPool.filter(t => t.name.toLowerCase().includes(tagSearch.toLowerCase()));
 
   const handleImportToVault = async () => {
     setError(null);
@@ -67,24 +80,23 @@ export default function CreateCollectible() {
     setIsSubmitting(true);
 
     try {
-      // Create FormData for PocketBase (handles files and text fields)
-      const recordId = randomPbId();
       const fd = new FormData();
       
-      fd.append('id', recordId);
       fd.append('name', formData.name.trim());
       fd.append('description', formData.description.trim());
       fd.append('estimated_value', price); 
       fd.append('year', Number(formData.year) || 0);
       fd.append('created_by', currentUser.id); 
       fd.append('category', formData.category);
-      fd.append('tags', JSON.stringify(formData.tags));
+      
+      formData.tags.forEach(tagId => {
+        fd.append('tags', tagId);
+      });
 
       if (formData.images?.length) {
         formData.images.forEach((file) => fd.append('images', file, file.name));
       }
 
-      // Direct write to PocketBase
       await pb.collection(PB_COLLECTABLES).create(fd);
 
       setShowSuccess(true);
@@ -97,6 +109,12 @@ export default function CreateCollectible() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Helper to handle dismissal and navigation
+  const handleCloseSuccess = () => {
+    setShowSuccess(false);
+    navigate('/profile'); // Redirects user to their profile
   };
 
   return (
@@ -175,7 +193,7 @@ export default function CreateCollectible() {
           <div className="flex flex-col h-[45%] mb-4 min-h-0">
             <span className="label-gold">Category</span>
             <div className="active-display-box h-10 min-h-[40px] mt-2 flex items-center justify-center border border-[var(--accent-color)] bg-[var(--accent-color)]/5 uppercase tracking-[0.2em] font-bold text-[var(--accent-color)] text-[9px]">
-              {formData.category || "Select Category"}
+              {categoryPool.find(c => c.id === formData.category)?.name || "Select Category"}
             </div>
             <input 
               type="text" 
@@ -188,11 +206,11 @@ export default function CreateCollectible() {
               <div className="flex flex-wrap gap-2">
                 {filteredCats.map(cat => (
                   <button 
-                    key={cat} 
-                    onClick={() => setFormData({...formData, category: cat})}
-                    className={`vault-btn text-[9px] px-2 py-1.5 uppercase border transition-all ${formData.category === cat ? 'border-[var(--accent-color)] text-[var(--accent-color)] bg-[var(--accent-color)]/10' : 'border-white/10 opacity-60 hover:opacity-100'}`}
+                    key={cat.id} 
+                    onClick={() => setFormData({...formData, category: cat.id})}
+                    className={`vault-btn text-[9px] px-2 py-1.5 uppercase border transition-all ${formData.category === cat.id ? 'border-[var(--accent-color)] text-[var(--accent-color)] bg-[var(--accent-color)]/10' : 'border-white/10 opacity-60 hover:opacity-100'}`}
                   >
-                    {cat}
+                    {cat.name}
                   </button>
                 ))}
               </div>
@@ -211,17 +229,17 @@ export default function CreateCollectible() {
             <div className="vault-scroll-box mt-3 flex-1 overflow-y-auto custom-scrollbar">
               <div className="flex flex-wrap gap-2 pb-4">
                 {filteredTags.map(tag => {
-                  const isSelected = formData.tags.includes(tag);
+                  const isSelected = formData.tags.includes(tag.id);
                   return (
                     <button 
-                      key={tag} 
-                      onClick={() => toggleTag(tag)}
+                      key={tag.id} 
+                      onClick={() => toggleTag(tag.id)}
                       className={`px-3 py-1.5 text-[9px] uppercase tracking-tighter border rounded-sm transition-all duration-200 
                         ${isSelected 
                           ? 'border-[var(--accent-color)] bg-[var(--accent-color)] text-black font-bold' 
                           : 'border-white/10 opacity-50 hover:opacity-100'}`}
                     >
-                      {tag}
+                      {tag.name}
                     </button>
                   );
                 })}
@@ -244,11 +262,11 @@ export default function CreateCollectible() {
 
       {/* Success modal */}
       {showSuccess && (
-        <div className="create-success-overlay" onClick={() => setShowSuccess(false)}>
+        <div className="create-success-overlay" onClick={handleCloseSuccess}>
           <div className="create-success-modal" onClick={e => e.stopPropagation()}>
             <h2 className="create-success-title">Vaulting Complete</h2>
             <p className="create-success-text">Asset metadata secured under Owner ID: {currentUser.id}</p>
-            <button type="button" className="create-success-dismiss" onClick={() => setShowSuccess(false)}>
+            <button type="button" className="create-success-dismiss" onClick={handleCloseSuccess}>
               Done
             </button>
           </div>
