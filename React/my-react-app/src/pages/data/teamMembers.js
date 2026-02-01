@@ -7,7 +7,11 @@ import VincentPic from "../../assets/images/Vincent.png";
 import VivianPic from "../../assets/images/Vivian.png";
 import CamPic from "../../assets/images/Cam.png";
 import AlexPic from "../../assets/images/Alex.png";
+import AlecPic from "../../assets/images/Alec.jpeg";
 import DrewPic from "../../assets/images/Drew.png";
+import TristenPic from "../../assets/images/Tristen.png";
+import JackPic from "../../assets/images/Jack.jpeg";
+
 import CatPic from "../../assets/images/goofyahcat.png";
 export const teamMembers = [
   {
@@ -22,7 +26,7 @@ export const teamMembers = [
     role: "Computer Science",
     image: KenseyPic,
     linkedin: "https://www.linkedin.com/in/kensey-mcdowell-5024b4264/",
-    email: "#",
+    email: "Kenseymcdowell@gmail.com",
   },
   {
     name: "Erik Apruda",
@@ -40,7 +44,7 @@ export const teamMembers = [
   },
   {
     name: "Devin Latham",
-    role: "Computer Science",
+    role: "Cybersecurity",
     image: DevinPic,
     linkedin: "https://www.linkedin.com/in/devin-latham/",
     email: "devinlatham20@gmail.com",
@@ -56,22 +60,22 @@ export const teamMembers = [
     name: "Vivian O'Connor",
     role: "Computer Science",
     image: VivianPic,
-    linkedin: "#",
-    email: "#",
+    linkedin: "https://www.linkedin.com/in/vivian-o-connor-b28841206/",
+    email: "Oconnvivi111@gmail.com",
   },
   {
     name: "Camille Murnane",
     role: "Cybersecurity",
     image: CamPic,
-    linkedin: "#",
-    email: "#",
+    linkedin: "https://www.linkedin.com/in/camille-murnane-a2815628b/",
+    email: "camillemurnane@yahoo.com",
   },
   {
     name: "Alex Guzman",
     role: "Computer Science",
     image: AlexPic,
-    linkedin: "#",
-    email: "#",
+    linkedin: "https://www.linkedin.com/in/alex-guzman-22459b211/",
+    email: "Guzmanalex06@icloud.com",
   },
   {
     name: "Drew Hammer",
@@ -83,22 +87,22 @@ export const teamMembers = [
   {
     name: "Alec Creasy",
     role: "Computer Science",
-    image: CatPic,
-    linkedin: "#",
-    email: "#",
+    image: AlecPic,
+    linkedin: "https://www.linkedin.com/in/alec-creasy",
+    email: "alec.creasy.dev@gmail.com",
   },
   {
     name: "Tristen Onate",
     role: "Computer Science",
-    image: CatPic,
-    linkedin: "#",
+    image: TristenPic,
+    linkedin: "https://www.linkedin.com/in/tristen-onate-57984b350/",
     email: "onatefrijol@gmail.com",
   },
   {
     name: "Jack Quinn",
     role: "Computer Science",
-    image: CatPic,
-    linkedin: "#",
+    image: JackPic,
+    linkedin: "https://www.linkedin.com/in/jack-quinn-58b36932a/",
     email: "jackquinn423@gmail.com",
   },
 ];
