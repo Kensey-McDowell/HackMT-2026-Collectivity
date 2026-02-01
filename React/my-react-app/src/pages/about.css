@@ -38,7 +38,7 @@
 
 /* Sliding "About Collectibles" */
 .about-slide-up-text {
-  align-self: flex-end;        
+  text-align: center;       
   font-size: 4rem;
   font-weight: 900;
   color: var(--accent-color);
@@ -46,6 +46,7 @@
   opacity: 0;
   animation: slideUp 0.8s ease-out forwards;
 }
+
 
 /* Jump links aligned with heading */
 .about-jump-links {
@@ -62,6 +63,7 @@
   color: var(--accent-color);
   text-decoration: none;
   transition: color 0.2s;
+  font-size: 20px;
 }
 
 .about-jump-links a:hover {
@@ -132,8 +134,8 @@
 /* From Uiverse.io by PriyanshuGupta28 */ 
 .marquee {
   overflow: hidden;
-  /* hide the scrolling overflow */
   width: 100%;
+  flex-shrink: 0;
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -158,14 +160,20 @@
 .marquee__inner {
   display: flex;
   width: max-content;
-  animation: marquee 15s linear infinite;
+  height: 300px;
+  animation: marquee 35s linear infinite;
 }
 
 .marquee__group {
   display: flex;
+  flex-shrink: 0;
 }
 
-.marquee__group span {
+.marquee__group .scroll-image-container {
+  margin: 0 1.5rem;
+}
+
+.marquee__group .picture {
   margin: 0 1.5rem;
   white-space: nowrap;
   background: #000000;
@@ -184,17 +192,34 @@
   }
 }
 
+.scroll-image-container { 
+  position: relative;  
+  display: inline-block;  
+  width: 300px; 
+  height: 300px; 
+  margin: 0 1.5rem; }
+
 .scroll-image-container img {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  width: 60px;  
-  height: 60px; 
-  object-fit: cover;  
-  border-radius: 8px;
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  border-radius: 6px; 
   display: block;
 }
+
+
+.picture { 
+  position: absolute; 
+  bottom: 0; /* sits on bottom edge of image */ 
+  left: 50%; 
+  transform: translateX(-50%); 
+  background: rgba(0,0,0,0.6); /* optional: makes text readable */ 
+  color: white; 
+  font-size: 0.7rem; 
+  padding: 2px 4px; 
+  border-radius: 3px; 
+  white-space: nowrap; 
+  pointer-events: none; /* prevents blocking marquee hover */ }
 
 
 
