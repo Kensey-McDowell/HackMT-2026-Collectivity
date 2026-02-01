@@ -5,7 +5,8 @@ import './ProductPage.css';
 
 const PB_COLLECTABLES = 'collectables';
 const PB_LOGS = 'activity_ledger';
-const PB_ANALYTICS = 'User_Analytics';
+// Ensure this matches your PocketBase collection name exactly (usually lowercase)
+const PB_ANALYTICS = 'user_analytics';
 
 
 const STATUS_LABELS = {
@@ -44,45 +45,48 @@ export default function ProductPage() {
 
   /**
    * GLOBAL ANALYTICS TRACKER
-   * Fixed 400 error by ensuring valid filter syntax and field existence
+   * Stores interest_name directly to bypass expansion issues
    */
-  const trackEngagement = async (categoryId, tagIds = []) => {
-  if (!currentUser) return;
+  const trackEngagement = async (categoryId, categoryName, tags = []) => {
+    if (!currentUser) return;
 
-  const entries = [
-    { id: categoryId, type: 'category' },
-    ...(tagIds || []).map(id => ({ id, type: 'tag' }))
-  ];
+    // Build entries with ID and Name
+    const entries = [];
+    if (categoryId) {
+      entries.push({ id: categoryId, name: categoryName, type: 'category' });
+    }
+    
+    (tags || []).forEach(tag => {
+      if (tag.id) entries.push({ id: tag.id, name: tag.name, type: 'tag' });
+    });
 
-  for (const item of entries) {
-    if (!item.id || typeof item.id !== 'string') continue;
+    for (const item of entries) {
+      if (!item.id || typeof item.id !== 'string') continue;
 
-    try {
-      const existing = await pb
-        .collection(PB_ANALYTICS)
-        .getFirstListItem(
+      try {
+        const existing = await pb.collection(PB_ANALYTICS).getFirstListItem(
           `user = "${currentUser.id}" && interest_id = "${item.id}"`,
           { $autoCancel: false }
         );
 
-      await pb.collection(PB_ANALYTICS).update(existing.id, {
-        view_count: (existing.view_count || 0) + 1
-      });
+        await pb.collection(PB_ANALYTICS).update(existing.id, {
+          view_count: (existing.view_count || 0) + 1,
+          interest_name: item.name // Keep name updated
+        });
 
-    } catch (err) {
-      if (err.status === 404) {
-        await pb.collection(PB_ANALYTICS).create({
-          user: currentUser.id,
-          interest_id: item.id,
-          type: item.type,
-          view_count: 1
-        }, { $autoCancel: false });
-      } else {
-        console.error("Analytics Error:", err);
+      } catch (err) {
+        if (err.status === 404) {
+          await pb.collection(PB_ANALYTICS).create({
+            user: currentUser.id,
+            interest_id: item.id,
+            interest_name: item.name, // Save the name here
+            type: item.type,
+            view_count: 1
+          }, { $autoCancel: false });
+        }
       }
     }
-  }
-};
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -91,7 +95,6 @@ export default function ProductPage() {
       
       try {
         setIsLoading(true);
-        // Added $autoCancel: false to prevent the ClientResponseError 0
         const record = await pb.collection(PB_COLLECTABLES).getOne(itemIndex, {
           expand: 'category,tags,created_by',
           $autoCancel: false 
@@ -114,13 +117,18 @@ export default function ProductPage() {
         setTransactions(logs);
 
         updateRecentHistory(itemIndex);
-        trackEngagement(record.category, record.tags);
+        
+        // Pass names to the tracker
+        trackEngagement(
+          record.category, 
+          record.expand?.category?.name || "Unknown Category", 
+          record.expand?.tags || []
+        );
 
         if (record.images?.length) {
           setProductImageUrl(pb.files.getURL(record, record.images[0]));
         }
       } catch (err) {
-        // Ignore abort errors in logs to keep console clean
         if (!err.isAbort) {
           console.error("Vault access failed:", err);
           setProduct(null);

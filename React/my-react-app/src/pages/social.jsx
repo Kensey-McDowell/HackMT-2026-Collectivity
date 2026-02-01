@@ -6,24 +6,21 @@ import { UI_TAG_MAP } from '../js/tags';
 import pb from '../lib/pocketbase';
 
 const PB_COLLECTABLES = 'collectables'; 
+const PB_ANALYTICS = 'user_analytics';
 
 export default function SocialPage() {
   const location = useLocation();
   const [collectibles, setCollectibles] = useState([]);
   const [recentItems, setRecentItems] = useState([]);
+  const [recommendedItems, setRecommendedItems] = useState([]);
+  const [topInterests, setTopInterests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTag, setSelectedTag] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("Memorabilia");
   const [availableTags, setAvailableTags] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
-
-  useEffect(() => {
-    if (location.state?.filterTag) {
-      setSelectedTag(location.state.filterTag);
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
+  
+  const [activeSidebarTab, setActiveSidebarTab] = useState('recent'); 
 
   useEffect(() => {
     async function fetchData() {
@@ -32,7 +29,7 @@ export default function SocialPage() {
         const records = await pb.collection(PB_COLLECTABLES).getFullList({
           sort: '-created',
           expand: 'category,tags',
-          $autoCancel: false // Fixes "The request was aborted" error
+          $autoCancel: false
         });
 
         const items = records.map(record => ({
@@ -50,12 +47,29 @@ export default function SocialPage() {
             filter: filterStr,
             $autoCancel: false
           });
-          
           const sortedRecents = recentIds
             .map(id => recentRecords.items.find(r => r.id === id))
             .filter(Boolean);
-            
           setRecentItems(sortedRecents);
+        }
+
+        if (pb.authStore.model) {
+          const analytics = await pb.collection(PB_ANALYTICS).getList(1, 40, {
+            filter: `user = "${pb.authStore.model.id}"`,
+            sort: '-view_count',
+            $autoCancel: false
+          });
+          setTopInterests(analytics.items);
+          
+          if (analytics.items.length > 0) {
+            const topId = analytics.items[0].interest_id;
+            const recs = await pb.collection(PB_COLLECTABLES).getList(1, 3, {
+              filter: `category = "${topId}" || tags ~ "${topId}"`,
+              expand: 'category,tags',
+              $autoCancel: false
+            });
+            setRecommendedItems(recs.items);
+          }
         }
       } catch (err) {
         if (!err.isAbort) console.error("Fetch failed:", err);
@@ -97,40 +111,107 @@ export default function SocialPage() {
     return matchesSearch && matchesTags;
   });
 
+  const SidebarNav = () => (
+    <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-2">
+      <button 
+        onClick={() => setActiveSidebarTab('recent')}
+        className={`text-[9px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'recent' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
+      >
+        Recent
+      </button>
+      <button 
+        onClick={() => setActiveSidebarTab('interests')}
+        className={`text-[9px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'interests' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
+      >
+        Interests
+      </button>
+      <button 
+        onClick={() => setActiveSidebarTab('suggested')}
+        className={`text-[9px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'suggested' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
+      >
+        For You
+      </button>
+    </div>
+  );
+
   return (
     <div className="social-dashboard-wrapper">
       <div className="social-main-content-area w-full flex">
         
         <aside className="social-sidebar w-64 hidden lg:flex flex-col border-r border-[var(--border-color)] p-6">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-8 text-[var(--accent-color)]">Recently Viewed</h2>
-          <div className="flex flex-col gap-4">
-            {recentItems.length > 0 ? (
-              recentItems.map((item) => (
-                <Link 
-                  key={item.id} 
-                  to={`/product/${item.id}`}
-                  className="social-sidebar-image-card group relative overflow-hidden border border-white/5 hover:border-[var(--accent-color)]/30 transition-all block h-32"
-                >
-                  <div className="w-full h-full bg-white/5">
-                    {item.images?.length > 0 && (
-                      <img 
-                        src={pb.files.getURL(item, item.images[0])} 
-                        alt={item.name} 
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" 
-                      />
+          <SidebarNav />
+          
+          <div className="flex flex-col gap-4 overflow-y-auto pr-1">
+            {activeSidebarTab === 'recent' && (
+              recentItems.length > 0 ? (
+                recentItems.map((item) => (
+                  <Link key={item.id} to={`/product/${item.id}`} className="social-sidebar-image-card group block h-32 relative border border-white/5 overflow-hidden">
+                    <div className="w-full h-full bg-white/5">
+                      {item.images?.length > 0 && (
+                        <img src={pb.files.getURL(item, item.images[0])} alt={item.name} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                    <div className="p-2 bg-black/70 absolute bottom-0 w-full border-t border-white/5">
+                      <span className="text-[9px] uppercase tracking-widest font-bold truncate block text-white">{item.name}</span>
+                    </div>
+                  </Link>
+                ))
+              ) : <div className="text-[9px] opacity-20 italic text-center mt-10 uppercase tracking-widest">No history</div>
+            )}
+
+            {activeSidebarTab === 'interests' && (
+              <div className="flex flex-col gap-6">
+                <div>
+                  <h3 className="text-[8px] uppercase tracking-[0.3em] mb-3 text-[var(--accent-color)] opacity-60 font-bold">Top Categories</h3>
+                  <div className="flex flex-col gap-2">
+                    {topInterests.filter(i => i.type === 'category' || i.type.includes('category')).slice(0, 5).map((interest) => (
+                      <div key={interest.id} className="p-2 border border-white/5 bg-white/5 flex justify-between items-center group">
+                        <span className="text-[10px] uppercase tracking-widest font-bold text-white group-hover:text-[var(--accent-color)] transition-colors">
+                          {interest.interest_name || "Untitled Category"}
+                        </span>
+                        <span className="text-[8px] font-mono opacity-30">{interest.view_count}v</span>
+                      </div>
+                    ))}
+                    {topInterests.filter(i => i.type === 'category' || i.type.includes('category')).length === 0 && (
+                      <div className="text-[9px] opacity-20 italic">No category data</div>
                     )}
                   </div>
-                  <div className="p-2 bg-black/70 absolute bottom-0 w-full border-t border-white/5">
-                    <span className="text-[9px] uppercase tracking-widest font-bold truncate block text-white">
-                      {item.name}
-                    </span>
+                </div>
+
+                <div>
+                  <h3 className="text-[8px] uppercase tracking-[0.3em] mb-3 text-[var(--accent-color)] opacity-60 font-bold">Top Tags</h3>
+                  <div className="flex flex-col gap-2">
+                    {topInterests.filter(i => i.type === 'tag' || i.type.includes('tag')).slice(0, 8).map((interest) => (
+                      <div key={interest.id} className="p-2 border border-white/5 bg-white/5 flex justify-between items-center group">
+                        <span className="text-[10px] uppercase tracking-widest font-bold text-white group-hover:text-[var(--accent-color)] transition-colors">
+                          {interest.interest_name || "Untitled Tag"}
+                        </span>
+                        <span className="text-[8px] font-mono opacity-30">{interest.view_count}v</span>
+                      </div>
+                    ))}
+                    {topInterests.filter(i => i.type === 'tag' || i.type.includes('tag')).length === 0 && (
+                      <div className="text-[9px] opacity-20 italic">No tag data</div>
+                    )}
                   </div>
-                </Link>
-              ))
-            ) : (
-              <div className="text-[9px] opacity-20 italic uppercase tracking-widest text-center mt-10">
-                No history
+                </div>
               </div>
+            )}
+
+            {activeSidebarTab === 'suggested' && (
+              recommendedItems.length > 0 ? (
+                recommendedItems.map((item) => (
+                  <Link key={item.id} to={`/product/${item.id}`} className="social-sidebar-image-card group block h-32 relative border border-white/5 overflow-hidden">
+                    <div className="w-full h-full bg-white/5">
+                      {item.images?.length > 0 && (
+                        <img src={pb.files.getURL(item, item.images[0])} alt={item.name} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                    <div className="p-2 bg-[var(--accent-color)]/20 absolute bottom-0 w-full border-t border-[var(--accent-color)]/30 backdrop-blur-sm">
+                      <span className="text-[9px] uppercase tracking-widest font-bold truncate block text-white">{item.name}</span>
+                    </div>
+                  </Link>
+                ))
+              ) : <div className="text-[9px] opacity-20 italic text-center mt-10 uppercase tracking-widest">Keep exploring to see suggestions</div>
             )}
           </div>
         </aside>
@@ -142,11 +223,7 @@ export default function SocialPage() {
                 <div className="text-[var(--accent-color)] uppercase tracking-widest text-xs">Syncing Database...</div>
               ) : (
                 filteredItems.map((item) => (
-                  <Link 
-                    key={item.id} 
-                    to={`/product/${item.id}`}
-                    className="transform transition-transform duration-300 hover:scale-105 active:scale-95"
-                  >
+                  <Link key={item.id} to={`/product/${item.id}`} className="transform transition-transform duration-300 hover:scale-105 active:scale-95">
                     <CollectibleCard item={item} />
                   </Link>
                 ))
@@ -157,26 +234,15 @@ export default function SocialPage() {
 
         <aside className="social-sidebar w-80 hidden md:flex flex-col gap-10 border-l border-[var(--border-color)] p-6 overflow-y-auto">
           <h2 className="text-xl font-bold italic tracking-tighter text-[var(--text-color)]">Discovery</h2>
-          
           <div className="space-y-8">
             <section>
               <label className="text-[10px] font-bold uppercase tracking-widest mb-3 block opacity-50">Filter By Name</label>
-              <input 
-                type="text" 
-                placeholder="Search..." 
-                className="social-search-input w-full" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <input type="text" placeholder="Search..." className="social-search-input w-full" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </section>
 
             <section>
               <label className="text-[10px] font-bold uppercase tracking-widest mb-3 block opacity-50">Category</label>
-              <select 
-                className="social-search-input cursor-pointer w-full"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
+              <select className="social-search-input cursor-pointer w-full" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
                 <option value="Memorabilia">Memorabilia</option>
                 <option value="Hardware">Hardware</option>
                 <option value="Toys & Hobbies">Toys & Hobbies</option>
