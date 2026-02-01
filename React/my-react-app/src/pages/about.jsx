@@ -63,7 +63,7 @@ export default function AboutPage() {
         </p>
       </div>
 
-      <button className="about-button">Contact Us</button>
+      
     </div>
   );
 }
