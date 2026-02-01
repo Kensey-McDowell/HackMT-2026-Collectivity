@@ -1,7 +1,16 @@
 import { useRef, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
+import { useSettings } from "../context/SettingsContext";
+
+const ALLOWED_PATHS = [
+  "/social",
+  "/about",
+  "/profile",
+  "/settings",
+  "/faq",
+];
 
 const ClickSpark = ({
-  sparkColor = "#c5a367",
   sparkSize = 10,
   sparkRadius = 15,
   sparkCount = 8,
@@ -10,33 +19,38 @@ const ClickSpark = ({
   extraScale = 1.0,
   children,
 }) => {
+  const { theme } = useSettings();
   const canvasRef = useRef(null);
   const sparksRef = useRef([]);
+  const location = useLocation();
   const startTimeRef = useRef(null);
 
-  // --- Resize + DPI scale ---
+  // Determine spark color based on theme, including "system"
+  const getSparkColor = () => {
+    if (theme === "light") return "#4f46e5";
+    if (theme === "dark") return "#c5a367";
+    // system theme
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "#c5a367"
+      : "#4f46e5";
+  };
+
+  // Resize canvas to always cover viewport
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     };
 
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
   }, []);
 
-  // --- Easing ---
+  // Easing function
   const easeFunc = useCallback(
     (t) => {
       switch (easing) {
@@ -47,22 +61,24 @@ const ClickSpark = ({
         case "ease-in-out":
           return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
         default:
-          return t * (2 - t);
+          return t * (2 - t); // ease-out
       }
     },
     [easing]
   );
 
-  // --- Draw Loop ---
+  // Animate sparks
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     let animationId;
 
     const draw = (timestamp) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const sparkColor = getSparkColor();
 
       sparksRef.current = sparksRef.current.filter((spark) => {
         const elapsed = timestamp - spark.startTime;
@@ -70,7 +86,6 @@ const ClickSpark = ({
 
         const progress = elapsed / duration;
         const eased = easeFunc(progress);
-
         const distance = eased * sparkRadius * extraScale;
         const lineLength = sparkSize * (1 - eased);
 
@@ -81,8 +96,6 @@ const ClickSpark = ({
 
         ctx.strokeStyle = sparkColor;
         ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -96,15 +109,22 @@ const ClickSpark = ({
 
     animationId = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animationId);
-  }, [sparkColor, sparkSize, sparkRadius, sparkCount, duration, easeFunc, extraScale]);
+  }, [sparkSize, sparkRadius, duration, easeFunc, extraScale, theme]);
 
-  // --- Click Handler ---
+  // Handle click
   const handleClick = (e) => {
-    const now = performance.now();
+    if (!ALLOWED_PATHS.includes(location.pathname)) return;
 
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const x = e.clientX;
+    const y = e.clientY;
+
+    const now = performance.now();
     const newSparks = Array.from({ length: sparkCount }, (_, i) => ({
-      x: e.clientX,
-      y: e.clientY,
+      x,
+      y,
       angle: (2 * Math.PI * i) / sparkCount,
       startTime: now,
     }));
@@ -113,17 +133,29 @@ const ClickSpark = ({
   };
 
   return (
-    <div onClick={handleClick} style={{ position: "relative" }}>
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        overflow: "visible",
+      }}
+      onClick={handleClick}
+    >
+      {children}
       <canvas
         ref={canvasRef}
         style={{
           position: "fixed",
-          inset: 0,
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
           pointerEvents: "none",
-          zIndex: 999999,
+          userSelect: "none",
+          zIndex: 9999,
         }}
       />
-      {children}
     </div>
   );
 };

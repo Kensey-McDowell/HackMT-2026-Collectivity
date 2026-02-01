@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './CreateCollectible.css';
-import { addCollectible } from '../js/testTransaction.js';
+import { addCollectible, connectWallet } from '../js/testTransaction.js';
 import pb from '../lib/pocketbase';
 
 const PB_COLLECTABLES = 'collectables';
@@ -30,6 +30,9 @@ export default function CreateCollectible() {
   const [error, setError] = useState(null);
   const [successTxHash, setSuccessTxHash] = useState(null);
 
+  // Check if a user is currently signed into PocketBase
+  const currentUser = pb.authStore.model;
+
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (formData.images.length + files.length > 4) return;
@@ -51,27 +54,24 @@ export default function CreateCollectible() {
   const handleImportToVault = async () => {
     setError(null);
     setSuccessTxHash(null);
-    if (!formData.name.trim()) {
-      setError('Collectible name is required.');
+    
+    // 1. Validate Auth State
+    if (!pb.authStore.isValid || !currentUser) {
+      setError('No active session found. Please sign in first.');
       return;
     }
-    if (!formData.description.trim()) {
-      setError('Description is required.');
-      return;
-    }
-    if (!formData.category) {
-      setError('Please select a category.');
-      return;
-    }
+
+    if (!formData.name.trim()) return setError('Collectible name is required.');
+    if (!formData.category) return setError('Please select a category.');
+
     const categoryIndex = categoryPool.indexOf(formData.category);
     const priceRaw = parseFloat(String(formData.value).replace(/[$,]/g, '').trim()) || 0;
     const price = Math.round(priceRaw);
-    if (price < 0) {
-      setError('Valuation must be non-negative.');
-      return;
-    }
+
     setIsSubmitting(true);
+
     try {
+      // 2. Execute Blockchain Transaction
       const { uniqueId, hash } = await addCollectible(
         null,
         formData.name.trim(),
@@ -80,31 +80,43 @@ export default function CreateCollectible() {
         0,
         price
       );
-      // Post unique ID (from chain) + uploaded photo(s) to PocketBase (FormData for file uploads)
-      //const txHashStr = typeof uniqueId === 'string' ? uniqueId : String(uniqueId ?? '');
-      const txHashStr = hash;
-      const uniqueIdValue= uniqueId;
 
-      console.log('Unique ID being passed:', uniqueIdValue);
-      console.log('Tx hash being passed:', txHashStr);
+      // 3. Sync with PocketBase
       const recordId = randomPbId();
-      const body = formData.images?.length
-        ? (() => {
-            const fd = new FormData();
-            fd.append('id', recordId);
-            fd.append('tx_hash', txHashStr);
-            fd.append('unique_id', uniqueIdValue);
-            formData.images.forEach((file) => fd.append('images', file, file.name || 'image'));
-            return fd;
-          })()
-        : { id: recordId, tx_hash: txHashStr, unique_id: uniqueIdValue };
-      await pb.collection(PB_COLLECTABLES).create(body);
+      const fd = new FormData();
+      
+      // Mapping to your specific DB columns
+      fd.append('id', recordId);
+      fd.append('name', formData.name.trim());
+      fd.append('description', formData.description.trim());
+      fd.append('estimated_value', price); 
+      fd.append('year', Number(formData.year) || 0);
+      fd.append('tx_hash', hash);
+      fd.append('unique_id', uniqueId);
+      
+      // Attach the PocketBase User ID
+      fd.append('created_by', currentUser.id); 
+      
+      // Categories and Tags
+      fd.append('category', formData.category);
+      // If tags field is a JSON/Text type in your DB:
+      fd.append('tags', JSON.stringify(formData.tags));
+
+      if (formData.images?.length) {
+        formData.images.forEach((file) => fd.append('images', file, file.name));
+      }
+
+      // 4. Create Record
+      await pb.collection(PB_COLLECTABLES).create(fd);
+
       setSuccessTxHash(hash);
       setFormData({ name: '', description: '', year: '', value: '', category: '', tags: [], images: [] });
+      
     } catch (err) {
-      console.error(err);
-      const pbMsg = err?.data?.message ?? err?.response?.data?.message ?? err?.message ?? err?.reason;
-      setError(pbMsg || 'Failed to add collectible.');
+      console.error("Vault Error:", err);
+      // Handle potential CORS or Network issues
+      const msg = err?.data?.message ?? err?.message ?? 'Connection failed. Check CORS settings.';
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -115,17 +127,25 @@ export default function CreateCollectible() {
   return (
     <div className="product-container h-full max-h-full overflow-hidden box-border bg-[#0a0a0a] text-white flex flex-row p-8 pb-8 gap-8">
       
-      {/* COLUMN 1: Identity & Details (LEFT) */}
+      {/* COLUMN 1: Identity */}
       <section className="flex-1 flex flex-col overflow-hidden pr-4 border-r border-white/10">
         <div className="mb-4 shrink-0">
           <span className="label-gold">Asset Identity</span>
           <input 
             type="text" 
             placeholder="COLLECTIBLE NAME" 
-            className="w-full bg-transparent border-b border-white/10 py-2 outline-none text-2xl font-thin tracking-widest placeholder:opacity-10 focus:border-[var(--accent-color)] transition-colors uppercase"
+            className="w-full bg-transparent border-b border-white/10 py-2 outline-none text-2xl font-thin tracking-widest focus:border-[var(--accent-color)] transition-colors uppercase"
             value={formData.name}
             onChange={e => setFormData({...formData, name: e.target.value})}
           />
+          {currentUser && (
+            <div className="flex items-center gap-2 mt-2 opacity-40">
+              <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+              <p className="text-[8px] font-mono uppercase tracking-tighter">
+                Verified Owner: {currentUser.name || currentUser.id}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4 mb-6 shrink-0">
@@ -153,7 +173,7 @@ export default function CreateCollectible() {
         </div>
       </section>
 
-      {/* COLUMN 2: Media (CENTER) */}
+      {/* COLUMN 2: Media */}
       <section className="w-[40%] flex flex-col overflow-hidden">
         <span className="label-gold mb-2 text-center">Step 03 — Media</span>
         <div className="flex-1 border border-white/10 relative bg-white/5 group hover:border-[var(--accent-color)]/50 transition-colors overflow-hidden">
@@ -173,10 +193,10 @@ export default function CreateCollectible() {
         </div>
       </section>
 
-      {/* COLUMN 3: Classification & Action (RIGHT) */}
+      {/* COLUMN 3: Classification */}
       <aside className="w-1/4 flex flex-col border-l border-white/10 pl-6 overflow-hidden">
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Category Vault */}
+          
           <div className="flex flex-col h-[45%] mb-4 min-h-0">
             <span className="label-gold">Category</span>
             <div className="active-display-box h-10 min-h-[40px] mt-2 flex items-center justify-center border border-[var(--accent-color)] bg-[var(--accent-color)]/5 uppercase tracking-[0.2em] font-bold text-[var(--accent-color)] text-[9px]">
@@ -195,7 +215,7 @@ export default function CreateCollectible() {
                   <button 
                     key={cat} 
                     onClick={() => setFormData({...formData, category: cat})}
-                    className={`vault-btn text-[9px] px-2 py-1.5 uppercase border ${formData.category === cat ? 'border-[var(--accent-color)] text-[var(--accent-color)]' : 'border-white/10 opacity-60 hover:opacity-100'}`}
+                    className={`vault-btn text-[9px] px-2 py-1.5 uppercase border transition-all ${formData.category === cat ? 'border-[var(--accent-color)] text-[var(--accent-color)] bg-[var(--accent-color)]/10' : 'border-white/10 opacity-60 hover:opacity-100'}`}
                   >
                     {cat}
                   </button>
@@ -204,48 +224,46 @@ export default function CreateCollectible() {
             </div>
           </div>
 
-          {/* Tag Vault */}
           <div className="flex flex-col h-[45%] overflow-hidden min-h-0">
             <span className="label-gold">Asset Tags</span>
-            <div className="active-tag-box min-h-[50px] max-h-[70px] border border-white/10 mt-2 p-2 bg-white/5 flex flex-wrap gap-1 content-start overflow-y-auto custom-scrollbar">
-              {formData.tags.map(t => (
-                <span key={t} className="bg-[var(--accent-color)] text-black px-2 py-0.5 text-[8px] font-black uppercase rounded-sm">
-                  {t}
-                </span>
-              ))}
-            </div>
             <input 
               type="text" 
-              placeholder="Filter..." 
+              placeholder="Search Tags..." 
               className="vault-search-input mt-2"
               value={tagSearch}
               onChange={(e) => setTagSearch(e.target.value)}
             />
-            <div className="vault-scroll-box mt-2 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="vault-scroll-box mt-3 flex-1 overflow-y-auto custom-scrollbar">
               <div className="flex flex-wrap gap-2 pb-4">
-                {filteredTags.map(tag => (
-                  <button 
-                    key={tag} 
-                    onClick={() => toggleTag(tag)}
-                    className={`vault-btn text-[9px] px-2 py-1.5 uppercase border ${formData.tags.includes(tag) ? 'border-[var(--accent-color)] text-[var(--accent-color)] bg-[var(--accent-color)]/5' : 'border-white/10 opacity-40 hover:opacity-100'}`}
-                  >
-                    {formData.tags.includes(tag) ? `✕ ${tag}` : `+ ${tag}`}
-                  </button>
-                ))}
+                {filteredTags.map(tag => {
+                  const isSelected = formData.tags.includes(tag);
+                  return (
+                    <button 
+                      key={tag} 
+                      onClick={() => toggleTag(tag)}
+                      className={`px-3 py-1.5 text-[9px] uppercase tracking-tighter border rounded-sm transition-all duration-200 
+                        ${isSelected 
+                          ? 'border-[var(--accent-color)] bg-[var(--accent-color)] text-black font-bold' 
+                          : 'border-white/10 opacity-50 hover:opacity-100'}`}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
 
-        {/* FINAL ACTION: Bottom Right */}
-        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+        {error && <p className="text-red-400 text-[9px] mt-2 italic bg-red-400/10 p-2 border border-red-400/20">{error}</p>}
+        
         <button
           type="button"
           onClick={handleImportToVault}
           disabled={isSubmitting}
           className="w-full py-5 mt-4 border border-[var(--accent-color)] text-[var(--accent-color)] uppercase tracking-[0.5em] text-[10px] font-black hover:bg-[var(--accent-color)] hover:text-black transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Submitting…' : 'Import to Vault'}
+          {isSubmitting ? 'Securing Ledger…' : 'Import to Vault'}
         </button>
       </aside>
 
@@ -253,15 +271,15 @@ export default function CreateCollectible() {
       {successTxHash && (
         <div className="create-success-overlay" onClick={() => setSuccessTxHash(null)}>
           <div className="create-success-modal" onClick={e => e.stopPropagation()}>
-            <h2 className="create-success-title">Collectible added to vault</h2>
-            <p className="create-success-text">Your transaction was confirmed.</p>
+            <h2 className="create-success-title">Vaulting Complete</h2>
+            <p className="create-success-text">Metadata synced with Owner ID: {currentUser.id}</p>
             <a
               href={`${SEPOLIA_ETHERSCAN}/${successTxHash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="create-success-link"
             >
-              View on Etherscan →
+              Verify on Blockchain →
             </a>
             <button type="button" className="create-success-dismiss" onClick={() => setSuccessTxHash(null)}>
               Done

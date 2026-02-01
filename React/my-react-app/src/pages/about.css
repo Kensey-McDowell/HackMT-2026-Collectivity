@@ -15,7 +15,7 @@
 .about-body {
   background-color: var(--bg-color);
   color: var(--text-color);
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Playfair Display', serif;
   margin: 0;
   padding: 0;
   scroll-behavior: smooth;
@@ -39,6 +39,7 @@
 
 /* Sliding "About Collectibles" */
 .about-slide-up-text {
+  margin-top: -50px;
   text-align: center;       
   font-size: 4rem;
   font-weight: 900;
@@ -131,6 +132,9 @@
   animation: slideUp 0.8s ease-out forwards;
 }
 
+.about-card h2 {
+  font-size: 25px;
+}
 
 /* From Uiverse.io by PriyanshuGupta28 */ 
 .marquee {
@@ -157,12 +161,13 @@
   font-weight: 800;
   text-align: center;
   margin-bottom: 20px;
+  color: var(--accent-color);
 }
 .marquee__inner {
   display: flex;
   width: max-content;
   height: 300px;
-  animation: marquee 35s linear infinite;
+  animation: marquee 80s linear infinite;
 }
 
 .marquee__group {
@@ -175,14 +180,17 @@
 }
 
 .marquee__group .picture {
-  margin: 0 1.5rem;
   white-space: nowrap;
-  background: #000000;
+  background: rgba(0, 0, 0, 0.2); 
   color: white;
   padding: 4px 16px 4px 12px;
   border-radius: 6px;
   font-size: 1.2rem;
+  display: inline-block; 
+  width: fit-content;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
 }
+
 
 @keyframes marquee {
   0% {
@@ -210,21 +218,20 @@
 
 
 .picture { 
-  position: absolute; 
-  bottom: 0; /* sits on bottom edge of image */ 
-  left: 50%; 
-  transform: translateX(-50%); 
-  background: rgba(0,0,0,0.6); /* optional: makes text readable */ 
+   position: absolute; 
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4); 
   color: white; 
-  font-size: 0.7rem; 
-  padding: 2px 4px; 
-  border-radius: 3px; 
-  white-space: nowrap; 
-  pointer-events: none; /* prevents blocking marquee hover */ }
-
-
-
-
+  padding: 8px 0;
+  text-align: center; 
+  box-sizing: border-box;
+  border-radius: 0 0 6px 6px; 
+  font-size: 1.2rem;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+  pointer-events: none; 
+}
 
 
 

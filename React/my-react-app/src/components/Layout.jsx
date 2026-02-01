@@ -85,7 +85,9 @@ export default function Layout() {
 
         {/* CENTER */}
         <div className="w-1/3 text-center">
-          <h1 className="social-platform-logo">COLLECTIVITY</h1>
+          <h1 className="social-platform-logo" onClick={() => navigate("/social")} style={{cursor: 'pointer'}}>
+            COLLECTIVITY
+          </h1>
         </div>
 
         {/* RIGHT */}
@@ -124,7 +126,8 @@ export default function Layout() {
                       className="account-item"
                       onClick={() => {
                         setOpen(false);
-                        navigate("/profile");
+                        // DYNAMIC CHANGE: Navigate to the specific user ID
+                        navigate(`/profile/${user.id}`);
                       }}
                     >
                       Account

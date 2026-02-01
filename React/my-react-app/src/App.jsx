@@ -26,7 +26,7 @@ import SocialPage from "./pages/social.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CreateCollectible from "./pages/CreateCollectible.jsx";
 import ChatWidget from "./ChatWidget.jsx";
-import ClickSpark from "./components/ClickSpark";
+import ClickSpark from "./components/ClickSpark.jsx";
 
 function usePocketAuth() {
   const [isLoggedIn, setIsLoggedIn] = useState(pb.authStore.isValid);

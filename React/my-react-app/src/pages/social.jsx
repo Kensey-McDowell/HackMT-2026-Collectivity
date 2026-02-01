@@ -14,17 +14,19 @@ export default function SocialPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("Memorabilia");
+  const [availableTags, setAvailableTags] = useState([]);
+  
+  // New state to track multiple selected tags for the UI highlight
+  const [activeTags, setActiveTags] = useState([]);
 
-  // Catch the tag from ProductPage navigation state
   useEffect(() => {
     if (location.state?.filterTag) {
       setSelectedTag(location.state.filterTag);
-      // Clear state so it doesn't re-filter on manual refresh
       window.history.replaceState({}, document.title);
     }
   }, [location]);
 
-  // Fetch blockchain data, then GET PocketBase row per unique_id and set card image
   useEffect(() => {
     async function fetchData() {
       try {
@@ -36,11 +38,9 @@ export default function SocialPage() {
           try {
             const row = await pb.collection(PB_COLLECTABLES).getFirstListItem(`unique_id = "${uniqueId.replace(/"/g, '\\"')}"`);
             if (row?.images?.length) {
-              item.imageUrl = pb.files.getUrl(row, row.images[0]);
+              item.imageUrl = pb.files.getURL(row, row.images[0]);
             }
-          } catch (_) {
-            // no row for this unique_id
-          }
+          } catch (_) {}
         }
         setCollectibles(items);
       } catch (err) {
@@ -52,26 +52,44 @@ export default function SocialPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    async function loadTags() {
+      try {
+        const records = await pb.collection('tags').getFullList({
+          filter: `field.name ~ "${selectedCategory}"`,
+          sort: 'name',
+          $autoCancel: false
+        });
+        setAvailableTags(records);
+      } catch (err) {
+        console.error("Connection failed:", err);
+      }
+    }
+    if (selectedCategory) loadTags();
+  }, [selectedCategory]);
+
+  // Toggle tag selection logic
+  const handleTagClick = (tagName) => {
+    if (activeTags.includes(tagName)) {
+      setActiveTags(activeTags.filter(t => t !== tagName));
+    } else {
+      setActiveTags([...activeTags, tagName]);
+    }
+  };
+
   const filteredItems = collectibles.filter(item => {
     const matchesSearch = item.collectible_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const activeTagID = selectedTag ? UI_TAG_MAP[selectedTag] : null;
-    const matchesTag = activeTagID ? Number(item.tag) === activeTagID : true;
-    return matchesSearch && matchesTag;
+    // If you want the grid to filter by these activeTags, you'd add that logic here
+    return matchesSearch;
   });
-
-  const handleTagSelect = (tag) => {
-    setSelectedTag(selectedTag === tag ? null : tag);
-  };
 
   return (
     <div className="social-dashboard-wrapper">
-      <div className="social-main-content-area">
+      <div className="social-main-content-area w-full flex">
         
-        {/* LEFT SIDEBAR: Recently Viewed */}
+        {/* LEFT SIDEBAR */}
         <aside className="social-sidebar w-64 hidden lg:flex flex-col border-r border-[var(--border-color)]">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-8 text-[var(--accent-color)]">
-            Recently Viewed
-          </h2>
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-8 text-[var(--accent-color)]">Recently Viewed</h2>
           <div className="flex flex-col">
             {[1, 2, 3].map((i) => (
               <div key={i} className="social-sidebar-image-card">
@@ -81,9 +99,9 @@ export default function SocialPage() {
           </div>
         </aside>
 
-        {/* CENTER COLUMN */}
+        {/* CENTER FEED */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="social-scrollable-box">
+          <div className="social-scrollable-box p-6">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {isLoading ? (
                 <div className="text-[var(--accent-color)] uppercase tracking-widest text-xs">Syncing Ledger...</div>
@@ -91,7 +109,7 @@ export default function SocialPage() {
                 filteredItems.map((item) => (
                   <Link 
                     key={item.unique_ID || item.index} 
-                    
+                    to={`/product/${item.unique_ID}`}
                     className="transform transition-transform duration-300 hover:scale-105 active:scale-95"
                   >
                     <CollectibleCard item={item} />
@@ -102,8 +120,8 @@ export default function SocialPage() {
           </div>
         </main>
 
-        {/* RIGHT SIDEBAR: Discovery & Search */}
-        <aside className="social-sidebar w-80 hidden md:flex flex-col gap-10 border-l border-[var(--border-color)]">
+        {/* RIGHT DISCOVERY SIDEBAR */}
+        <aside className="social-sidebar w-80 hidden md:flex flex-col gap-10 border-l border-[var(--border-color)] p-6 overflow-y-auto">
           <h2 className="text-xl font-bold italic tracking-tighter text-[var(--text-color)]">Discovery</h2>
           
           <div className="space-y-8">
@@ -112,44 +130,65 @@ export default function SocialPage() {
               <input 
                 type="text" 
                 placeholder="Search..." 
-                className="social-search-input" 
+                className="social-search-input w-full" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </section>
 
-              
             <section>
               <label className="text-[10px] font-bold uppercase tracking-widest mb-3 block opacity-50">Category</label>
-              <select className="social-search-input cursor-pointer appearance-none">
-                <option>All Exhibits</option>
-                <option>Cinematic</option>
-                <option>Modern Architecture</option>
-                <option>Noir Photography</option>
+              <select 
+                className="social-search-input cursor-pointer w-full"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="Memorabilia">Memorabilia</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Toys & Hobbies">Toys & Hobbies</option>
+                <option value="Movies & TV">Movies & TV</option>
+                <option value="Music">Music</option>
+                <option value="Comics">Comics</option>
+                <option value="Figures">Figures</option>
+                <option value="Board Games">Board Games</option>
+                <option value="Video Games">Video Games</option>
+                <option value="Sports">Sports</option>
+                <option value="Books">Books</option>
+                <option value="Cards">Cards</option>
+                <option value="Global">Global</option>
               </select>
             </section>
 
             <section>
-              <label className="text-[10px] font-bold uppercase tracking-widest mb-4 block opacity-50">Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {/* Dynamically render from your MAP to ensure they always match */}
-                {Object.keys(UI_TAG_MAP).map(tag => (
-                  <button 
-                    onClick={() => handleTagSelect(tag)}
-                    key={tag} 
-                    className={`px-3 py-1 border text-[10px] uppercase font-bold transition-all duration-300 
-                      ${selectedTag === tag 
-                        ? 'bg-[var(--accent-color)] text-[var(--bg-color)] border-[var(--accent-color)] scale-110 shadow-lg' 
-                        : 'border-[var(--border-color)] text-[var(--text-color)] hover:border-[var(--accent-color)] hover:text-[var(--accent-color)]'
-                      }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
+              <label className="text-[10px] font-bold uppercase tracking-widest mb-3 block opacity-50">
+                Available Tags
+              </label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {availableTags.length > 0 ? (
+                  availableTags.map((tag) => {
+                    const isSelected = activeTags.includes(tag.name);
+                    return (
+                      <button
+                        key={tag.id}
+                        onClick={() => handleTagClick(tag.name)}
+                        className={`px-3 py-2 border rounded-md text-[10px] uppercase tracking-tighter transition-all duration-200 ${
+                          isSelected 
+                            ? 'bg-[var(--accent-color)] border-[var(--accent-color)] text-black font-bold' 
+                            : 'border-[var(--border-color)] text-[var(--text-color)] opacity-70 hover:opacity-100 hover:border-[var(--accent-color)]'
+                        }`}
+                      >
+                        {tag.name}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <p className="text-[10px] opacity-30 italic">No tags found for {selectedCategory}.</p>
+                )}
               </div>
             </section>
           </div>
         </aside>
+
       </div>
     </div>
   );
