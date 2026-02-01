@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom'; 
 import './social.css';
-// Removed: import { printAllCollectibles } from '../js/testTransaction.js'; (Blockchain no longer needed)
 import CollectibleCard from '../components/collectibleCard'; 
 import { UI_TAG_MAP } from '../js/tags';
 import pb from '../lib/pocketbase';
@@ -11,13 +10,12 @@ const PB_COLLECTABLES = 'collectables';
 export default function SocialPage() {
   const location = useLocation();
   const [collectibles, setCollectibles] = useState([]);
+  const [recentItems, setRecentItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("Memorabilia");
   const [availableTags, setAvailableTags] = useState([]);
-  
-  // New state to track multiple selected tags for the UI highlight
   const [activeTags, setActiveTags] = useState([]);
 
   useEffect(() => {
@@ -27,29 +25,40 @@ export default function SocialPage() {
     }
   }, [location]);
 
-  // FULL CONVERSION: Fetching directly from PocketBase instead of Blockchain
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       try {
-        // Fetch items directly from PocketBase
-        // We use 'expand' to get the category and tags data in the same request
         const records = await pb.collection(PB_COLLECTABLES).getFullList({
           sort: '-created',
-          expand: 'category,tags', 
+          expand: 'category,tags',
+          $autoCancel: false // Fixes "The request was aborted" error
         });
 
         const items = records.map(record => ({
           ...record,
-          // Map PocketBase fields to the names expected by your existing CollectibleCard component
-          unique_ID: record.unique_id, 
+          unique_ID: record.id, 
           collectible_name: record.name,
           imageUrl: record.images?.length ? pb.files.getURL(record, record.images[0]) : null
         }));
-
         setCollectibles(items);
+
+        const recentIds = JSON.parse(localStorage.getItem('recent_views') || '[]');
+        if (recentIds.length > 0) {
+          const filterStr = recentIds.map(id => `id="${id}"`).join(' || ');
+          const recentRecords = await pb.collection(PB_COLLECTABLES).getList(1, 3, {
+            filter: filterStr,
+            $autoCancel: false
+          });
+          
+          const sortedRecents = recentIds
+            .map(id => recentRecords.items.find(r => r.id === id))
+            .filter(Boolean);
+            
+          setRecentItems(sortedRecents);
+        }
       } catch (err) {
-        console.error("Failed to fetch collectibles:", err);
+        if (!err.isAbort) console.error("Fetch failed:", err);
       } finally {
         setIsLoading(false);
       }
@@ -67,13 +76,12 @@ export default function SocialPage() {
         });
         setAvailableTags(records);
       } catch (err) {
-        console.error("Connection failed:", err);
+        if (!err.isAbort) console.error("Tag load failed:", err);
       }
     }
     if (selectedCategory) loadTags();
   }, [selectedCategory]);
 
-  // Toggle tag selection logic
   const handleTagClick = (tagName) => {
     if (activeTags.includes(tagName)) {
       setActiveTags(activeTags.filter(t => t !== tagName));
@@ -84,11 +92,8 @@ export default function SocialPage() {
 
   const filteredItems = collectibles.filter(item => {
     const matchesSearch = item.collectible_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Check if the item's tags (from the expand field) match any activeTags
     const matchesTags = activeTags.length === 0 || 
       activeTags.some(tagName => item.expand?.tags?.some(t => t.name === tagName));
-
     return matchesSearch && matchesTags;
   });
 
@@ -96,19 +101,40 @@ export default function SocialPage() {
     <div className="social-dashboard-wrapper">
       <div className="social-main-content-area w-full flex">
         
-        {/* LEFT SIDEBAR */}
-        <aside className="social-sidebar w-64 hidden lg:flex flex-col border-r border-[var(--border-color)]">
+        <aside className="social-sidebar w-64 hidden lg:flex flex-col border-r border-[var(--border-color)] p-6">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-8 text-[var(--accent-color)]">Recently Viewed</h2>
-          <div className="flex flex-col">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="social-sidebar-image-card">
-                <span className="text-[10px] uppercase tracking-widest font-bold">Recent {i}</span>
+          <div className="flex flex-col gap-4">
+            {recentItems.length > 0 ? (
+              recentItems.map((item) => (
+                <Link 
+                  key={item.id} 
+                  to={`/product/${item.id}`}
+                  className="social-sidebar-image-card group relative overflow-hidden border border-white/5 hover:border-[var(--accent-color)]/30 transition-all block h-32"
+                >
+                  <div className="w-full h-full bg-white/5">
+                    {item.images?.length > 0 && (
+                      <img 
+                        src={pb.files.getURL(item, item.images[0])} 
+                        alt={item.name} 
+                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" 
+                      />
+                    )}
+                  </div>
+                  <div className="p-2 bg-black/70 absolute bottom-0 w-full border-t border-white/5">
+                    <span className="text-[9px] uppercase tracking-widest font-bold truncate block text-white">
+                      {item.name}
+                    </span>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="text-[9px] opacity-20 italic uppercase tracking-widest text-center mt-10">
+                No history
               </div>
-            ))}
+            )}
           </div>
         </aside>
 
-        {/* CENTER FEED */}
         <main className="flex-1 flex flex-col overflow-hidden">
           <div className="social-scrollable-box p-6">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -117,8 +143,8 @@ export default function SocialPage() {
               ) : (
                 filteredItems.map((item) => (
                   <Link 
-                    key={item.unique_ID || item.id} 
-                    to={`/product/${item.unique_ID}`}
+                    key={item.id} 
+                    to={`/product/${item.id}`}
                     className="transform transition-transform duration-300 hover:scale-105 active:scale-95"
                   >
                     <CollectibleCard item={item} />
@@ -129,7 +155,6 @@ export default function SocialPage() {
           </div>
         </main>
 
-        {/* RIGHT DISCOVERY SIDEBAR */}
         <aside className="social-sidebar w-80 hidden md:flex flex-col gap-10 border-l border-[var(--border-color)] p-6 overflow-y-auto">
           <h2 className="text-xl font-bold italic tracking-tighter text-[var(--text-color)]">Discovery</h2>
           
@@ -169,9 +194,7 @@ export default function SocialPage() {
             </section>
 
             <section>
-              <label className="text-[10px] font-bold uppercase tracking-widest mb-3 block opacity-50">
-                Available Tags
-              </label>
+              <label className="text-[10px] font-bold uppercase tracking-widest mb-3 block opacity-50">Available Tags</label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {availableTags.length > 0 ? (
                   availableTags.map((tag) => {
@@ -197,7 +220,6 @@ export default function SocialPage() {
             </section>
           </div>
         </aside>
-
       </div>
     </div>
   );

@@ -92,6 +92,7 @@ function ThemedApp() {
           <Route element={<Layout />}>
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<HomePage />} />
+            
 
             <Route
               path="/about"
@@ -137,6 +138,10 @@ function ThemedApp() {
             <Route path="/social" element={<SocialPage />} />
             <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
             <Route path="/create" element={<CreateCollectible />} />
+
+            
+            <Route path="/create" element={<CreateCollectible />} />
+            <Route path="/edit/:id" element={<CreateCollectible />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/home" replace />} />
