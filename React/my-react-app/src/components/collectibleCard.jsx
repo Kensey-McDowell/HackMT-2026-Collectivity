@@ -46,9 +46,9 @@ export default function CollectibleCard({ item }) {
         ${isClicked ? 'animate-pulse-gold border-[var(--accent-color)] scale-[0.97]' : 'hover:border-[var(--accent-color)] hover:-translate-y-1'}`}
     >
       
-      {/* 1. THE IMAGE */}
+      {/* 1. THE IMAGE (from PocketBase row matched by unique_id, fallback placeholder) */}
       <img 
-        src={"https://cdn.pixabay.com/photo/2018/11/19/05/53/animal-3824672_640.jpg"} 
+        src={item.imageUrl || "https://cdn.pixabay.com/photo/2018/11/19/05/53/animal-3824672_640.jpg"} 
         alt={item.collectible_name} 
         className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 
           ${isClicked ? 'scale-105 opacity-40 blur-[2px]' : 'group-hover:scale-110'}`} 

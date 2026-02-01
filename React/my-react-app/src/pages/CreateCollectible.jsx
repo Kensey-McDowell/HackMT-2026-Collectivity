@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import './CreateCollectible.css';
 import { addCollectible } from '../js/testTransaction.js';
+import pb from '../lib/pocketbase';
+
+const PB_COLLECTABLES = 'collectables';
+
+function randomPbId() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from(crypto.getRandomValues(new Uint8Array(15)), (b) => chars[b % chars.length]).join('');
+}
 
 export default function CreateCollectible() {
   const categoryPool = ["Cards", "Game Items", "Military Items", "Sneakers", "Sports"];
@@ -64,7 +72,7 @@ export default function CreateCollectible() {
     }
     setIsSubmitting(true);
     try {
-      const tx = await addCollectible(
+      const { uniqueId, hash } = await addCollectible(
         null,
         formData.name.trim(),
         formData.description.trim(),
@@ -72,11 +80,31 @@ export default function CreateCollectible() {
         0,
         price
       );
-      setSuccessTxHash(tx.hash);
+      // Post unique ID (from chain) + uploaded photo(s) to PocketBase (FormData for file uploads)
+      //const txHashStr = typeof uniqueId === 'string' ? uniqueId : String(uniqueId ?? '');
+      const txHashStr = hash;
+      const uniqueIdValue= uniqueId;
+
+      console.log('Unique ID being passed:', uniqueIdValue);
+      console.log('Tx hash being passed:', txHashStr);
+      const recordId = randomPbId();
+      const body = formData.images?.length
+        ? (() => {
+            const fd = new FormData();
+            fd.append('id', recordId);
+            fd.append('tx_hash', txHashStr);
+            fd.append('unique_id', uniqueIdValue);
+            formData.images.forEach((file) => fd.append('images', file, file.name || 'image'));
+            return fd;
+          })()
+        : { id: recordId, tx_hash: txHashStr, unique_id: uniqueIdValue };
+      await pb.collection(PB_COLLECTABLES).create(body);
+      setSuccessTxHash(hash);
       setFormData({ name: '', description: '', year: '', value: '', category: '', tags: [], images: [] });
     } catch (err) {
       console.error(err);
-      setError(err?.message || err?.reason || 'Failed to add collectible.');
+      const pbMsg = err?.data?.message ?? err?.response?.data?.message ?? err?.message ?? err?.reason;
+      setError(pbMsg || 'Failed to add collectible.');
     } finally {
       setIsSubmitting(false);
     }
