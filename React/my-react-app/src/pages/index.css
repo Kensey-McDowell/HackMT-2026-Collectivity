@@ -1,0 +1,433 @@
+:root {
+  /* Base Theme */
+  --bg-color: #0a0908;
+  --text-color: #f4ece1;
+  --accent-color: #c5a367;
+  --secondary-accent: #d9cbb3;
+  --secondary-bg: #2f2b28;
+  --hover-color: #cfc6b8;
+  --border-color: #6e6458;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+
+  --radius: 14px;
+  --radius-sm: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ---------------- Admin Panel Layout ---------------- */
+
+.ap {
+  min-height: 100%;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.ap-page {
+  padding: 18px;
+}
+
+.ap-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+@media (max-width: 980px) {
+  .ap-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------- Topbar ---------------- */
+
+.ap-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(110, 100, 88, 0.55);
+  border-radius: var(--radius);
+  background: rgba(47, 43, 40, 0.35);
+  box-shadow: 0 10px 25px var(--shadow-color);
+}
+
+.ap-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ap-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--accent-color);
+  box-shadow: 0 0 0 5px rgba(197, 163, 103, 0.18);
+}
+
+.ap-title {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: var(--text-color);
+}
+
+.ap-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--secondary-accent);
+  opacity: 0.95;
+}
+
+.ap-h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ap-helper {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: var(--secondary-accent);
+  line-height: 1.35;
+}
+
+.ap-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* ---------------- Cards ---------------- */
+
+.ap-card {
+  border: 1px solid rgba(110, 100, 88, 0.55);
+  border-radius: var(--radius);
+  background: rgba(47, 43, 40, 0.35);
+  box-shadow: 0 10px 25px var(--shadow-color);
+  padding: 16px;
+}
+
+.ap-smallCard {
+  border: 1px solid rgba(110, 100, 88, 0.45);
+  border-radius: var(--radius-sm);
+  background: rgba(47, 43, 40, 0.28);
+  padding: 14px;
+}
+
+.ap-cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ap-mt8 {
+  margin-top: 8px;
+}
+.ap-mt12 {
+  margin-top: 12px;
+}
+
+.ap-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ap-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ap-wrap {
+  flex-wrap: wrap;
+}
+
+.ap-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--secondary-accent);
+  opacity: 0.95;
+}
+
+.ap-strong {
+  font-weight: 800;
+  color: var(--text-color);
+}
+
+.ap-metric {
+  font-size: 30px;
+  font-weight: 900;
+  margin-top: 4px;
+  color: var(--text-color);
+}
+
+/* ---------------- Sidebar ---------------- */
+
+.ap-sidebar {
+  position: sticky;
+  top: 14px;
+  height: fit-content;
+}
+
+.ap-navBtn {
+  width: 100%;
+  border: 1px solid rgba(110, 100, 88, 0.55);
+  background: rgba(10, 9, 8, 0.35);
+  color: var(--text-color);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease, border 0.15s ease;
+  margin-bottom: 10px;
+}
+
+.ap-navBtn:hover {
+  background: rgba(47, 43, 40, 0.55);
+  border-color: rgba(197, 163, 103, 0.55);
+}
+
+.ap-navBtn.isActive {
+  border-color: rgba(197, 163, 103, 0.9);
+  background: rgba(197, 163, 103, 0.12);
+}
+
+/* ---------------- Inputs ---------------- */
+
+.ap-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ap-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(110, 100, 88, 0.55);
+  background: rgba(10, 9, 8, 0.35);
+  color: var(--text-color);
+  outline: none;
+}
+
+.ap-input::placeholder {
+  color: rgba(217, 203, 179, 0.65);
+}
+
+.ap-input:focus {
+  border-color: rgba(197, 163, 103, 0.85);
+  box-shadow: 0 0 0 4px rgba(197, 163, 103, 0.14);
+}
+
+.ap-search {
+  max-width: 360px;
+}
+
+/* ---------------- Buttons ---------------- */
+
+.ap-btn {
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid rgba(110, 100, 88, 0.65);
+  background: rgba(10, 9, 8, 0.35);
+  color: var(--text-color);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease, border 0.15s ease;
+}
+
+.ap-btn:hover {
+  background: rgba(47, 43, 40, 0.6);
+  border-color: rgba(197, 163, 103, 0.65);
+}
+
+.ap-btn:active {
+  transform: translateY(1px);
+}
+
+.ap-btnPrimary {
+  background: rgba(197, 163, 103, 0.18);
+  border-color: rgba(197, 163, 103, 0.9);
+}
+
+.ap-btnPrimary:hover {
+  background: rgba(197, 163, 103, 0.24);
+}
+
+.ap-btnSecondary {
+  background: rgba(10, 9, 8, 0.35);
+}
+
+.ap-btnDanger {
+  border-color: rgba(255, 99, 99, 0.6);
+  background: rgba(255, 99, 99, 0.08);
+}
+
+.ap-btnDanger:hover {
+  border-color: rgba(255, 99, 99, 0.9);
+  background: rgba(255, 99, 99, 0.12);
+}
+
+/* ---------------- Pills / Errors ---------------- */
+
+.ap-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid rgba(110, 100, 88, 0.55);
+  background: rgba(10, 9, 8, 0.35);
+  color: var(--text-color);
+}
+
+.ap-pillGold {
+  border-color: rgba(197, 163, 103, 0.9);
+  background: rgba(197, 163, 103, 0.14);
+}
+
+.ap-error {
+  border: 1px solid rgba(255, 99, 99, 0.6);
+  background: rgba(255, 99, 99, 0.08);
+  color: #ffd1d1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.ap-note {
+  font-size: 12px;
+  color: var(--secondary-accent);
+  opacity: 0.95;
+}
+
+/* ---------------- Tables ---------------- */
+
+.ap-tableWrap {
+  overflow: auto;
+  border-radius: var(--radius);
+  border: 1px solid rgba(110, 100, 88, 0.45);
+}
+
+.ap-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+  background: rgba(10, 9, 8, 0.25);
+}
+
+.ap-table thead th {
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--secondary-accent);
+  padding: 12px;
+  border-bottom: 1px solid rgba(110, 100, 88, 0.45);
+}
+
+.ap-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(110, 100, 88, 0.25);
+  color: var(--text-color);
+}
+
+.ap-table tbody tr:hover {
+  background: rgba(47, 43, 40, 0.35);
+}
+
+.ap-empty {
+  text-align: center;
+  color: rgba(217, 203, 179, 0.8);
+  padding: 22px !important;
+}
+
+/* ---------------- Grids / Charts ---------------- */
+
+.ap-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ap-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ap-grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 980px) {
+  .ap-grid2 {
+    grid-template-columns: 1fr;
+  }
+  .ap-grid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ap-chartImg {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(110, 100, 88, 0.35);
+  background: rgba(10, 9, 8, 0.25);
+}
+
+/* ---------------- Login ---------------- */
+
+.ap-loginShell {
+  position: fixed;     /* take over the viewport */
+  inset: 0;            /* top/right/bottom/left = 0 */
+  display: grid;
+  place-items: center; /* true center */
+  padding: 20px;
+  overflow: auto;      /* if small screen, allow scrolling inside */
+}
+
+.ap-loginCard {
+  width: min(520px, 100%);
+  margin: 0 auto;
+}
+
+/* Prevent the “white strip” feeling */
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+body {
+  overflow-x: hidden;
+}
+
