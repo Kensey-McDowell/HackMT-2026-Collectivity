@@ -1,0 +1,137 @@
+:root {
+  --bg-color: #0a0908;
+  --text-color: #f4ece1;
+  --accent-color: #c5a367;
+  --secondary-bg: #1f1c1a;
+  --hover-color: #cfc6b8;
+  --border-color: #6e6458;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --digital-accent: rgba(197, 163, 103, 0.2);
+}
+
+.team-card {
+  width: 160px;
+  height: 220px;
+  perspective: 1200px;
+  cursor: pointer;
+}
+
+.team-card-inner {
+  width: 130%;
+  height: 130%;
+  transition: transform 0.7s ease;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.team-card:hover .team-card-inner,
+.team-card.locked .team-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Front & back faces */
+.team-card-front,
+.team-card-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  backface-visibility: hidden;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  background: var(--secondary-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.team-card-front {
+    transform:rotateY(0deg);
+}
+
+/* Image fills card */
+.team-card-front img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Gradient at bottom for text readability */
+.team-card-front::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%; /* bigger gradient for smoother fade */
+  background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2), transparent);
+  z-index: 1;
+}
+
+/* Front text container */
+.team-card-front-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 12px;
+  backface-visibility: hidden;
+}
+
+/* Name */
+.team-card-front-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+  margin: 0;
+  backface-visibility: hidden;
+}
+
+/* Role / subtext */
+.team-card-front-content p {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #fff;
+  opacity: 0.9;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+  margin: 2px 0 0 0;
+  backface-visibility: hidden;
+}
+
+/* Back face */
+.team-card-back {
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  font-size: 1.3rem;
+}
+
+.team-card-back a {
+  color: var(--accent-color);
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.team-card-back a:hover {
+  text-decoration: underline;
+}
+/* Used to center Gavin's headshot picture */
+.team-card-front img.gavin {
+    object-position: 95% 50%;
+}
