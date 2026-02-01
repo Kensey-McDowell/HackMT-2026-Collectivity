@@ -1,225 +1,220 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
+import pb from "../lib/pocketbase"; 
 import defaultAvatar from "../assets/images/Avatar_Photo.jpg";
 import { useSettings } from "../context/SettingsContext";
-import pb from '../lib/pocketbase';
 import "./settings.css";
 
 export default function SettingsPage() {
-  const currentUser = pb.authStore.model;
-  const { theme, setTheme, fontSize, setFontSize } = useSettings();
-  const [activeSection, setActiveSection] = useState(null); 
-  const [walletAddress, setWalletAddress] = useState(null);
-  
-  const avatarInputRef = useRef(null);
-  const bannerInputRef = useRef(null);
-
-  // Dynamically fetch URLs from PocketBase or fallback to defaults
-  const profileImageUrl = currentUser?.avatar 
-    ? pb.files.getURL(currentUser, currentUser.avatar) 
-    : defaultAvatar;
-
-  const bannerUrl = currentUser?.banner 
-    ? pb.files.getURL(currentUser, currentUser.banner) 
-    : "https://i.etsystatic.com/34466454/r/il/5e9775/4175504808/il_fullxfull.4175504808_bdhn.jpg";
-
-  // --- DATABASE UPDATE LOGIC ---
-  const handleFileAction = async (e, type) => {
-    e.preventDefault();
-    const file = e.target.files?.[0] || e.dataTransfer?.files?.[0];
-    if (!file) return;
-
-    try {
-      const formData = new FormData();
-      // Ensure 'type' matches your PocketBase field names ('avatar' and 'banner')
-      formData.append(type, file);
-
-      // Update the 'users' collection for the logged-in user
-      await pb.collection('users').update(currentUser.id, formData);
-      
-      // Refresh the page to synchronize the AuthStore and display new images
-      window.location.reload();
-    } catch (err) {
-      console.error(`Failed to sync ${type} to database:`, err);
-      alert(`Error updating ${type}. Ensure the field exists in your PocketBase 'users' collection.`);
-    }
-  };
-
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setWalletAddress(accounts[0]);
-      } catch (err) {
-        console.error("Connection Refused", err);
-      }
-    } else {
-      alert("MetaMask / Web3 Provider not detected.");
-    }
-  };
-
   return (
-    <div className="settings-page h-screen overflow-hidden antialiased w-full flex flex-col p-4 md:p-6">
-      <div className="w-full max-w-[1800px] mx-auto flex flex-col h-full">
-        
-        {/* HIDDEN INPUTS */}
-        <input type="file" ref={avatarInputRef} className="hidden" onChange={(e) => handleFileAction(e, 'avatar')} />
-        <input type="file" ref={bannerInputRef} className="hidden" onChange={(e) => handleFileAction(e, 'banner')} />
-
-        {/* --- DYNAMIC BANNER --- */}
-        <div 
-          className="relative w-full rounded-md border border-[var(--border-color)] overflow-hidden cursor-pointer group mb-6 flex-shrink-0"
-          style={{ 
-            backgroundImage: `url(${bannerUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            height: '140px' 
-          }}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => handleFileAction(e, 'banner')}
-          onClick={() => bannerInputRef.current.click()}
-        >
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-            <span className="text-[9px] tracking-[0.4em] text-white font-bold uppercase">Update Banner</span>
-          </div>
-
-          <div 
-            className="absolute bottom-3 left-6 group/avatar"
-            onClick={(e) => { e.stopPropagation(); avatarInputRef.current.click(); }}
-            onDrop={(e) => { e.stopPropagation(); handleFileAction(e, 'avatar'); }}
-          >
-            <img 
-              src={profileImageUrl}
-              className="w-20 h-20 rounded-full border border-[var(--accent-color)] object-cover bg-[var(--bg-color)] shadow-2xl transition-transform group-hover/avatar:scale-105" 
-              alt="Avatar"
-            />
-          </div>
-        </div>
-
-        {/* --- MAIN DASHBOARD LAYOUT --- */}
-        <div className="flex flex-1 gap-12 mb-4 min-h-0">
-          
-          {/* FAR LEFT: SECURITY VERTICAL */}
-          <aside className="w-60 flex flex-col gap-5 flex-shrink-0">
-             <span className="text-[9px] tracking-[0.5em] opacity-30 uppercase font-bold mb-2">Security Node</span>
-              <button onClick={() => setActiveSection("username")} className={`setting-box-rect ${activeSection === 'username' ? 'active-box' : ''}`}>
-                <span className="box-label-full">CHANGE USERNAME</span>
-              </button>
-              <button onClick={() => setActiveSection("password")} className={`setting-box-rect ${activeSection === 'password' ? 'active-box' : ''}`}>
-                <span className="box-label-full">CHANGE PASSWORD</span>
-              </button>
-              <button onClick={() => setActiveSection("email")} className={`setting-box-rect ${activeSection === 'email' ? 'active-box' : ''}`}>
-                <span className="box-label-full">CHANGE EMAIL</span>
-              </button>
-          </aside>
-
-          {/* CENTER: ACTION AREA */}
-          <main className="flex-1 bg-white/[0.01] border border-white/[0.03] rounded-xl flex items-center justify-center relative">
-            {activeSection ? (
-              <div className="w-full max-w-md p-10 animate-fade-in">
-                <ActionArea 
-                  type={activeSection} 
-                  theme={theme} setTheme={setTheme}
-                  fontSize={fontSize} setFontSize={setFontSize}
-                  close={() => setActiveSection(null)} 
-                />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center opacity-10">
-                <span className="italic tracking-[0.8em] text-[10px] uppercase">Initialize Terminal</span>
-              </div>
-            )}
-          </main>
-
-          {/* FAR RIGHT: VISUAL & WALLET */}
-          <aside className="w-60 flex flex-col gap-5 flex-shrink-0">
-            <span className="text-[9px] tracking-[0.5em] opacity-30 uppercase font-bold mb-2 text-right">Interface Matrix</span>
-              <button onClick={() => setActiveSection("theme")} className={`setting-box-rect ${activeSection === 'theme' ? 'active-box' : ''}`}>
-                <span className="box-label-full">SYSTEM THEME</span>
-              </button>
-              <button onClick={() => setActiveSection("font")} className={`setting-box-rect ${activeSection === 'font' ? 'active-box' : ''}`}>
-                <span className="box-label-full">TEXT SCALING</span>
-              </button>
-              
-              <button 
-                onClick={connectWallet} 
-                className={`setting-box-rect ${walletAddress ? 'active-wallet-border' : ''}`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="box-label-full">
-                    {walletAddress ? "NODE CONNECTED" : "LINK METAFAUCET"}
-                  </span>
-                  {walletAddress && (
-                    <span className="text-[7px] text-[var(--accent-color)] font-mono opacity-60 truncate w-32">
-                      {walletAddress.substring(0, 6)}...{walletAddress.substring(38)}
-                    </span>
-                  )}
-                </div>
-              </button>
-          </aside>
-        </div>
-      </div>
+    <div className="settings-page">
+      <h1 className="settings-title">Settings</h1>
+      <AccountSettings />
+      <VisualSettings />
     </div>
   );
 }
 
-function ActionArea({ type, theme, setTheme, fontSize, setFontSize, close }) {
-  const [inputVal, setInputVal] = useState("");
+function AccountSettings() {
+  const [option, setOption] = useState("");
+  const [openAccount, setOpenAccount] = useState(false);
 
-  const Title = ({ text }) => (
-    <div className="mb-10 text-center">
-      <h3 className="label-gold tracking-[0.6em] uppercase text-[11px] font-bold">{text}</h3>
+  // Form States
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [profilePic, setProfilePic] = useState(null);
+  const [profileBanner, setProfileBanner] = useState(null);
+
+  const currentUser = pb.authStore.model;
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!currentUser) return alert("No user logged in!");
+
+    // IMPORTANT: PocketBase requires FormData for file uploads
+    const formData = new FormData();
+
+    try {
+      // Logic: Only append data if that specific option is selected and has a value
+      if (option === "Change Username" && username) {
+        formData.append("name", username);
+      }
+      if (option === "Change Email" && email) {
+        formData.append("email", email);
+      }
+      if (option === "Change Password" && password) {
+        formData.append("password", password);
+        formData.append("passwordConfirm", password);
+      }
+      
+      // FILE UPLOADS: This is what talks to your DB columns
+      if (option === "Change Profile Picture" && profilePic) {
+        formData.append("avatar", profilePic); // Must match field name 'avatar' in PB
+      }
+      if (option === "Change Profile Banner" && profileBanner) {
+        formData.append("banner", profileBanner); // Must match field name 'banner' in PB
+      }
+
+      // Update the database
+      await pb.collection("users").update(currentUser.id, formData);
+      
+      alert("Database updated successfully!");
+      
+      // Cleanup: Clear states so the old values don't stick around
+      setOption("");
+      setUsername("");
+      setPassword("");
+      setEmail("");
+      setProfilePic(null);
+      setProfileBanner(null);
+
+    } catch (err) {
+      console.error("DB Update Error:", err);
+      alert("FAILED TO UPDATE DATABASE: " + err.message);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm("Delete your account permanently? This cannot be undone.")) {
+      try {
+        await pb.collection("users").delete(currentUser.id);
+        pb.authStore.clear(); 
+        window.location.reload(); 
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+  };
+
+  return (
+    <div className="settings-section">
+      <h2 className="section-title">Account Settings</h2>
+
+      <div className="dropdown">
+        <div className="dropdown-label">Select an Option</div>
+        <div className="dropdown-selected" onClick={() => setOpenAccount(!openAccount)}>
+          {option === "" ? "Choose..." : option}
+          <span className={`arrow ${openAccount ? "open" : ""}`}></span>
+        </div>
+
+        {openAccount && (
+          <div className="dropdown-menu">
+            <div className="dropdown-item" onClick={() => { setOption("Change Username"); setOpenAccount(false); }}>Change Username</div>
+            <div className="dropdown-item" onClick={() => { setOption("Change Password"); setOpenAccount(false); }}>Change Password</div>
+            <div className="dropdown-item" onClick={() => { setOption("Change Email"); setOpenAccount(false); }}>Change Email</div>
+            <div className="dropdown-item" onClick={() => { setOption("Change Profile Picture"); setOpenAccount(false); }}>Change Profile Picture</div>
+            <div className="dropdown-item" onClick={() => { setOption("Change Profile Banner"); setOpenAccount(false); }}>Change Profile Banner</div>
+            <div className="dropdown-item" onClick={() => { setOption("Delete Account"); setOpenAccount(false); }} style={{color: 'red'}}>Delete Account</div>
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={handleUpdate}>
+        {option === "Change Username" && (
+          <div className="settings-input-group">
+            <label>New Username</label>
+            <input type="text" className="settings-input" value={username} onChange={(e) => setUsername(e.target.value)} />
+            <button type="submit" className="settings-button">Update Username</button>
+          </div>
+        )}
+
+        {option === "Change Password" && (
+          <div className="settings-input-group">
+            <label>New Password</label>
+            <input type="password" placeholder="••••••••" className="settings-input" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <button type="submit" className="settings-button">Update Password</button>
+          </div>
+        )}
+
+        {option === "Change Email" && (
+          <div className="settings-input-group">
+            <label>New Email</label>
+            <input type="email" className="settings-input" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <button type="submit" className="settings-button">Update Email</button>
+          </div>
+        )}
+
+        {option === "Change Profile Picture" && (
+          <div className="settings-input-group">
+            <label>New Profile Picture</label>
+            <div className="profile-preview">
+              <img src={profilePic ? URL.createObjectURL(profilePic) : defaultAvatar} alt="Profile Preview" />
+            </div>
+            <input type="file" accept="image/*" onChange={(e) => setProfilePic(e.target.files[0])} />
+            <button type="submit" className="settings-button">Update Profile Picture</button>
+          </div>
+        )}
+
+        {option === "Change Profile Banner" && (
+          <div className="settings-input-group">
+            <label>New Profile Banner</label>
+            <div className="banner-preview" style={{width: '100%', height: '80px', backgroundColor: '#333', borderRadius: '4px', margin: '10px 0', overflow: 'hidden'}}>
+                {profileBanner ? (
+                  <img src={URL.createObjectURL(profileBanner)} style={{width: '100%', height: '100%', objectFit: 'cover'}} alt="Banner Preview" />
+                ) : (
+                  <div style={{color: '#666', textAlign: 'center', lineHeight: '80px'}}>No File Selected</div>
+                )}
+            </div>
+            <input type="file" accept="image/*" onChange={(e) => setProfileBanner(e.target.files[0])} />
+            <button type="submit" className="settings-button">Update Profile Banner</button>
+          </div>
+        )}
+
+        {option === "Delete Account" && (
+          <div className="settings-input-group">
+            <label>This action is irreversible.</label>
+            <button type="button" className="settings-button" style={{backgroundColor: '#ff4d4d'}} onClick={handleDeleteAccount}>
+              Confirm Delete
+            </button>
+          </div>
+        )}
+      </form>
     </div>
   );
+}
 
-  switch (type) {
-    case "username":
-    case "password":
-    case "email":
-      return (
-        <div className="flex flex-col items-center">
-          <Title text={`MANAGE ${type}`} />
-          <input 
-            type={type === "password" ? "password" : "text"} 
-            className="terminal-input-slim" 
-            placeholder={`ENTER NEW ${type.toUpperCase()}`} 
-            value={inputVal} 
-            onChange={e => setInputVal(e.target.value)} 
-          />
-          <div className="flex gap-4 mt-10 w-full">
-            <button className="flex-1 py-4 border border-[var(--accent-color)] text-[var(--accent-color)] text-[10px] tracking-[0.3em] hover:bg-[var(--accent-color)] hover:text-black transition-all" onClick={close}>AUTHORIZE</button>
-            <button className="flex-1 py-4 border border-white/10 text-white/40 text-[10px] tracking-[0.3em] hover:bg-white/5 transition-all" onClick={close}>CANCEL</button>
-          </div>
+function VisualSettings() {
+  const { theme, setTheme, fontSize, setFontSize } = useSettings();
+  const [openTheme, setOpenTheme] = useState(false);
+  const [openFont, setOpenFont] = useState(false);
+
+  return (
+    <div className="settings-section">
+      <h2 className="section-title">Visual Settings</h2>
+
+      <div className="dropdown">
+        <div className="dropdown-label">Theme</div>
+        <div className="dropdown-selected" onClick={() => setOpenTheme(!openTheme)}>
+          {theme.charAt(0).toUpperCase() + theme.slice(1)}
+          <span className={`arrow ${openTheme ? "open" : ""}`}></span>
         </div>
-      );
-    case "theme":
-      return (
-        <div className="text-center">
-          <Title text="ATMOSPHERE" />
-          <div className="flex flex-col gap-4">
+        {openTheme && (
+          <div className="dropdown-menu">
             {["system", "light", "dark"].map(t => (
-              <button key={t} onClick={() => setTheme(t)} className={`py-5 border text-[10px] tracking-[0.5em] transition-all ${theme === t ? 'border-[var(--accent-color)] text-[var(--accent-color)]' : 'border-white/10 text-white/40 hover:border-white/20'}`}>
-                {t.toUpperCase()}
-              </button>
+              <div key={t} className="dropdown-item" onClick={() => { setTheme(t); setOpenTheme(false); }}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </div>
             ))}
-            <button className="mt-6 text-[9px] opacity-30 tracking-[0.3em] uppercase hover:opacity-100 transition-opacity" onClick={close}>[ Exit Selection ]</button>
           </div>
+        )}
+      </div>
+
+      <div className="dropdown">
+        <div className="dropdown-label">Font Size</div>
+        <div className="dropdown-selected" onClick={() => setOpenFont(!openFont)}>
+          {fontSize.charAt(0).toUpperCase() + fontSize.slice(1)}
+          <span className={`arrow ${openFont ? "open" : ""}`}></span>
         </div>
-      );
-    case "font":
-      return (
-        <div className="text-center">
-          <Title text="MATRIX SCALE" />
-          <div className="flex flex-col gap-4">
-            {["small", "medium", "large"].map(f => (
-              <button key={f} onClick={() => setFontSize(f)} className={`py-5 border text-[10px] tracking-[0.5em] transition-all ${fontSize === f ? 'border-[var(--accent-color)] text-[var(--accent-color)]' : 'border-white/10 text-white/40 hover:border-white/20'}`}>
-                {f.toUpperCase()}
-              </button>
+        {openFont && (
+          <div className="dropdown-menu">
+            {["small", "medium", "large"].map(size => (
+              <div key={size} className="dropdown-item" onClick={() => { setFontSize(size); setOpenFont(false); }}>
+                {size.charAt(0).toUpperCase() + size.slice(1)}
+              </div>
             ))}
-            <button className="mt-6 text-[9px] opacity-30 tracking-[0.3em] uppercase hover:opacity-100 transition-opacity" onClick={close}>[ Exit Selection ]</button>
           </div>
-        </div>
-      );
-    default:
-      return null;
-  }
+        )}
+      </div>
+    </div>
+  );
 }

@@ -85,5 +85,7 @@
   box-shadow: 0 4px 15px var(--shadow-color);
 }
 
-
+.social-main-content-area{
+  overflow-y: auto !important;
+}
 
