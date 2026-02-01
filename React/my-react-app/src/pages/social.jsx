@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom'; 
 import './social.css';
-import { printAllCollectibles } from '../js/testTransaction.js';
+// Removed: import { printAllCollectibles } from '../js/testTransaction.js'; (Blockchain no longer needed)
 import CollectibleCard from '../components/collectibleCard'; 
 import { UI_TAG_MAP } from '../js/tags';
 import pb from '../lib/pocketbase';
@@ -27,21 +27,26 @@ export default function SocialPage() {
     }
   }, [location]);
 
+  // FULL CONVERSION: Fetching directly from PocketBase instead of Blockchain
   useEffect(() => {
     async function fetchData() {
+      setIsLoading(true);
       try {
-        const data = await printAllCollectibles();
-        const items = Array.isArray(data) ? data : [];
-        for (const item of items) {
-          const uniqueId = item.unique_ID != null ? String(item.unique_ID) : '';
-          if (!uniqueId) continue;
-          try {
-            const row = await pb.collection(PB_COLLECTABLES).getFirstListItem(`unique_id = "${uniqueId.replace(/"/g, '\\"')}"`);
-            if (row?.images?.length) {
-              item.imageUrl = pb.files.getURL(row, row.images[0]);
-            }
-          } catch (_) {}
-        }
+        // Fetch items directly from PocketBase
+        // We use 'expand' to get the category and tags data in the same request
+        const records = await pb.collection(PB_COLLECTABLES).getFullList({
+          sort: '-created',
+          expand: 'category,tags', 
+        });
+
+        const items = records.map(record => ({
+          ...record,
+          // Map PocketBase fields to the names expected by your existing CollectibleCard component
+          unique_ID: record.unique_id, 
+          collectible_name: record.name,
+          imageUrl: record.images?.length ? pb.files.getURL(record, record.images[0]) : null
+        }));
+
         setCollectibles(items);
       } catch (err) {
         console.error("Failed to fetch collectibles:", err);
@@ -79,8 +84,12 @@ export default function SocialPage() {
 
   const filteredItems = collectibles.filter(item => {
     const matchesSearch = item.collectible_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    // If you want the grid to filter by these activeTags, you'd add that logic here
-    return matchesSearch;
+    
+    // Check if the item's tags (from the expand field) match any activeTags
+    const matchesTags = activeTags.length === 0 || 
+      activeTags.some(tagName => item.expand?.tags?.some(t => t.name === tagName));
+
+    return matchesSearch && matchesTags;
   });
 
   return (
@@ -104,11 +113,11 @@ export default function SocialPage() {
           <div className="social-scrollable-box p-6">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {isLoading ? (
-                <div className="text-[var(--accent-color)] uppercase tracking-widest text-xs">Syncing Ledger...</div>
+                <div className="text-[var(--accent-color)] uppercase tracking-widest text-xs">Syncing Database...</div>
               ) : (
                 filteredItems.map((item) => (
                   <Link 
-                    key={item.unique_ID || item.index} 
+                    key={item.unique_ID || item.id} 
                     to={`/product/${item.unique_ID}`}
                     className="transform transition-transform duration-300 hover:scale-105 active:scale-95"
                   >
