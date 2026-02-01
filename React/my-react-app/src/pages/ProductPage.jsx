@@ -3,10 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom'; // 1. Import the hook
 
 import { printAllCollectibles } from '../js/testTransaction.js';
+import pb from '../lib/pocketbase';
 import './ProductPage.css';
-import { ID_TO_STR } from '../js/tags'; // Import your mapping
+import { ID_TO_STR } from '../js/tags';
 
-  const STATUS_LABELS = {
+const PB_COLLECTABLES = 'collectables';
+
+const STATUS_LABELS = {
   0: "Verified",
   1: "Not Verified",
   2: "For Sale",
@@ -63,7 +66,8 @@ export default function ProductPage() {
             if (row?.images?.length) {
               setProductImageUrl(pb.files.getUrl(row, row.images[0]));
             }
-          } catch (_) {
+          } catch (pbErr) {
+            console.warn('ProductPage: PocketBase image not found for unique_id', uniqueIDValue, pbErr);
             setProductImageUrl(null);
           }
         }
