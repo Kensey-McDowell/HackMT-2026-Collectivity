@@ -1,5 +1,5 @@
 🔀 Git Workflow (Team Standard)
-Always pull latest changes before starting work:
+Always pull latest changes before starting work: DO NOT DO THIS IF YOU ALREADY HAVE STARTED WOKING
 ```
 git fetch
 git checkout main

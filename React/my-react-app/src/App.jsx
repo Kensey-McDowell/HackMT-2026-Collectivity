@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { SettingsProvider, useSettings } from "./context/SettingsContext";
-import "./pages/settings.css";
+import "./pages/theme.css"; 
 
 import Layout from "./components/Layout.jsx";
 import HomePage from "./pages/home.jsx";
@@ -14,7 +14,7 @@ import RegistrationPage from "./pages/registration.jsx";
 import SocialPage from "./pages/social.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CreateCollectible from "./pages/CreateCollectible.jsx";
-
+import ChatWidget from "./ChatWidget.jsx";
 
 function ThemedApp() {
   const { theme, fontSize } = useSettings();
@@ -22,6 +22,8 @@ function ThemedApp() {
   return (
     <div className={`theme-${theme} font-${fontSize}`} style={{ minHeight: "100vh" }}>
       <Router>
+        <ChatWidget />
+
         <Routes>
           <Route path="/intro" element={<IntroPage />} />
           <Route path="/registration" element={<RegistrationPage />} />
