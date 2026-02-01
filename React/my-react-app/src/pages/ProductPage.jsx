@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom'; // 1. Import the hook
 
 import { printAllCollectibles } from '../js/testTransaction.js';
-import './productpage.css';
+import './ProductPage.css';
 import { ID_TO_STR } from '../js/tags'; // Import your mapping
 
   const STATUS_LABELS = {
