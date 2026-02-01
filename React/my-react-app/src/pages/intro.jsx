@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useNavigate } from "react-router-dom";
+import Modal from "../components/Modal";
 import Book from "../assets/book";
 import Chain from "../assets/chain";
 import "./intro.css";
