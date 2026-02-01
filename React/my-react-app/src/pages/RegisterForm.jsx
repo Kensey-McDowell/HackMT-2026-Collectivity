@@ -1,7 +1,7 @@
 import { useState } from "react";
 import pb from "../lib/pocketbase";
 
-export default function RegisterForm({ onSwitch, onSuccess }) {
+export default function RegisterForm({ onSwitch }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -28,16 +28,16 @@ export default function RegisterForm({ onSwitch, onSuccess }) {
     setLoading(true);
 
     try {
-      // 1️⃣ Create user
+      // 1️⃣ Create user in PocketBase
       await pb.collection("users").create({
         email: form.email,
         password: form.password,
         passwordConfirm: form.confirmPassword,
         name: form.name,
-        username: form.name,
+  
       });
 
-      // 2️⃣ Auto-login
+      // 2️⃣ Auto-login after signup
       await pb.collection("users").authWithPassword(
         form.email,
         form.password
@@ -46,11 +46,9 @@ export default function RegisterForm({ onSwitch, onSuccess }) {
       console.log("User created:", pb.authStore.model);
       console.log("Auth valid:", pb.authStore.isValid);
 
-      // ✅ CLOSE MODAL ON SUCCESS
-      onSuccess?.();
-
+      // TODO: redirect to dashboard
     } catch (err) {
-      console.error("REGISTER ERROR:", err);
+      console.error(err);
       setError("Account creation failed");
     } finally {
       setLoading(false);
@@ -84,6 +82,10 @@ export default function RegisterForm({ onSwitch, onSuccess }) {
             required
           />
         </div>
+
+        
+
+        
 
         <div className="auth-field">
           <label>Password</label>

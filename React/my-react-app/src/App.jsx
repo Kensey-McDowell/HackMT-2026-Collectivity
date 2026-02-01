@@ -26,7 +26,7 @@ function ThemedApp() {
 
         <Routes>
           <Route path="/intro" element={<IntroPage />} />
-          {/* <Route path="/registration" element={<RegistrationPage />} /> */}
+          <Route path="/registration" element={<RegistrationPage />} />
          
           <Route path="/profile" element={<ProfilePage />} />
 
