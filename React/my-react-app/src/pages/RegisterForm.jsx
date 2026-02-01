@@ -69,6 +69,7 @@ export default function RegisterForm({ onSwitch, onSuccess }) {
             name="name"
             value={form.name}
             onChange={update}
+            placeholder="Enter your name"
             required
           />
         </div>
@@ -81,6 +82,7 @@ export default function RegisterForm({ onSwitch, onSuccess }) {
             name="email"
             value={form.email}
             onChange={update}
+            placeholder="Enter your email"
             required
           />
         </div>
@@ -93,6 +95,7 @@ export default function RegisterForm({ onSwitch, onSuccess }) {
             name="password"
             value={form.password}
             onChange={update}
+            placeholder="Enter a password"
             required
           />
         </div>
@@ -105,6 +108,7 @@ export default function RegisterForm({ onSwitch, onSuccess }) {
             name="confirmPassword"
             value={form.confirmPassword}
             onChange={update}
+            placeholder="Confirm your password"
             required
           />
         </div>

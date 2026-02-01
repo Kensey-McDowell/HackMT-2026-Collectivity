@@ -125,22 +125,22 @@ export default function SocialPage() {
   });
 
   const SidebarNav = () => (
-    <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-2 gap-2">
+    <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-2 gap-1.5">
       <button 
         onClick={() => setActiveSidebarTab('following')}
-        className={`text-[9px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'following' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
+        className={`text-[10px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'following' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
       >
         Following
       </button>
       <button 
         onClick={() => setActiveSidebarTab('recent')}
-        className={`text-[9px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'recent' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
+        className={`text-[10px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'recent' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
       >
         Recent
       </button>
       <button 
         onClick={() => setActiveSidebarTab('interests')}
-        className={`text-[9px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'interests' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
+        className={`text-[10px] uppercase tracking-widest font-bold transition-colors ${activeSidebarTab === 'interests' ? 'text-[var(--accent-color)]' : 'opacity-30 hover:opacity-100'}`}
       >
         Interests
       </button>
