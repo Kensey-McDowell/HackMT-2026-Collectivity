@@ -8,11 +8,12 @@ export function useSettings() {
 
 export function SettingsProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("theme") || "system";
+    return localStorage.getItem("theme") ?? "system";
   });
 
   const [fontSize, setFontSize] = useState(() => {
-    return localStorage.getItem("fontSize") || "medium";
+    return localStorage.getItem("fontSize") 
+ "medium";
   });
 
   useEffect(() => {

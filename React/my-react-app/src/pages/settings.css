@@ -1,12 +1,19 @@
-/* -----------------------------------------------------------
-   SETTINGS PAGE LAYOUT
------------------------------------------------------------ */
 .settings-page {
   background-color: var(--bg-color);
   color: var(--text-color);
   min-height: 100vh;
   padding: 24px;
+  overflow-y: auto !important;
+  display: flex; 
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }
+
 
 .settings-title {
   font-size: 2rem;
@@ -14,15 +21,14 @@
   margin-bottom: 24px;
 }
 
-/* -----------------------------------------------------------
-   SECTIONS
------------------------------------------------------------ */
 .settings-section {
   background-color: var(--secondary-bg);
   padding: 20px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
   margin-bottom: 32px;
+  margin-left: auto; 
+  margin-right: auto;
 }
 
 .section-title {
@@ -30,9 +36,6 @@
   margin-bottom: 16px;
 }
 
-/* -----------------------------------------------------------
-   INPUTS
------------------------------------------------------------ */
 .settings-input-group {
   margin-top: 12px;
   display: flex;
@@ -60,9 +63,6 @@
   border: none;
 }
 
-/* -----------------------------------------------------------
-   PROFILE PICTURE PREVIEW
------------------------------------------------------------ */
 .profile-preview {
   width: 96px;
   height: 96px;
@@ -78,9 +78,6 @@
   object-fit: cover;
 }
 
-/* -----------------------------------------------------------
-   DROPDOWNS
------------------------------------------------------------ */
 .dropdown {
   width: 260px;
   margin-bottom: 24px;
@@ -142,9 +139,6 @@
   color: var(--bg-color);
 }
 
-/* -----------------------------------------------------------
-   ANIMATIONS
------------------------------------------------------------ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
