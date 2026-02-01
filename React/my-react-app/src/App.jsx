@@ -13,7 +13,6 @@ import { AuthModalProvider, useAuthModal } from "./context/AuthModalContext.jsx"
 
 import "./pages/theme.css";
 import Layout from "./components/Layout.jsx";
-import HomePage from "./pages/home.jsx";
 import IntroPage from "./pages/intro.jsx";
 import AboutPage from "./pages/about.jsx";
 import ProfilePage from "./pages/profile.jsx";
@@ -53,7 +52,7 @@ function RequireAuth({ children }) {
 
   if (!isLoggedIn) {
     openLogin(location.pathname);
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/social" replace />;
   }
 
   return children;
@@ -66,11 +65,11 @@ function RequireAdmin({ children }) {
 
   if (!isLoggedIn) {
     openLogin(location.pathname);
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/social" replace />;
   }
 
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
-  if (!isAdmin) return <Navigate to="/home" replace />;
+  if (!isAdmin) return <Navigate to="/social" replace />;
 
   return children;
 }
@@ -90,10 +89,8 @@ function ThemedApp() {
 
           {/* Layout */}
           <Route element={<Layout />}>
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<HomePage />} />
+            <Route path="/" element={<Navigate to="/intro" replace />} />
             
-
             <Route
               path="/about"
               element={
@@ -144,7 +141,7 @@ function ThemedApp() {
             <Route path="/edit/:id" element={<CreateCollectible />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<Navigate to="/social" replace />} />
         </Routes>
       </Router>
     </div>
