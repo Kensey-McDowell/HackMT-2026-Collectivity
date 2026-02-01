@@ -1,8 +1,10 @@
 import fs from "fs";
 import path from "path";
 
+//Load the knowledge base path
 const KB_DIR = path.join(process.cwd(), "kb");
 
+//Load the knowledge base.
 function loadKB() {
     const files = fs.readdirSync(KB_DIR);
     return files.map(f => 
@@ -10,6 +12,7 @@ function loadKB() {
     ).join("\n\n");
 }
 
+//Store the knowledge base.
 const KNOWLEDGE_BASE = loadKB();
 
 //Policy to keep the chatbot contained within the domain of our website.
