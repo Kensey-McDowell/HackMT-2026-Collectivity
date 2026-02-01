@@ -16,12 +16,15 @@ export default function LoginForm({ onSwitch, onSuccess }) {
       // ✅ Authenticate
       await pb.collection("users").authWithPassword(email, password);
 
+      // ✅ Force re-fetch auth model so role is guaranteed
+      await pb.collection("users").authRefresh();
+
       console.log("AUTH VALID:", pb.authStore.isValid);
       console.log("USER:", pb.authStore.model);
+      console.log("ROLE:", pb.authStore.model?.role);
 
       // ✅ CLOSE MODAL ON SUCCESS
       onSuccess?.();
-
     } catch (err) {
       console.error("LOGIN ERROR:", err);
       setError("Invalid email or password");
@@ -41,7 +44,7 @@ export default function LoginForm({ onSwitch, onSuccess }) {
             className="auth-input"
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
@@ -52,14 +55,14 @@ export default function LoginForm({ onSwitch, onSuccess }) {
             className="auth-input"
             type="password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
 
         {error && <p className="auth-error">{error}</p>}
 
-        <button className="auth-button" disabled={loading}>
+        <button className="auth-button" disabled={loading} type="submit">
           {loading ? "Logging in..." : "Log In"}
         </button>
       </form>
