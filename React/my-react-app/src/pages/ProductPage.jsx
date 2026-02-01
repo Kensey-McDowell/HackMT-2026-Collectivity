@@ -3,11 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom'; // 1. Import the hook
 
 import { printAllCollectibles } from '../js/testTransaction.js';
-import pb from '../lib/pocketbase';
-import './productpage.css';
-import { ID_TO_STR } from '../js/tags';
-
-const PB_COLLECTABLES = 'collectables';
+import './ProductPage.css';
+import { ID_TO_STR } from '../js/tags'; // Import your mapping
 
   const STATUS_LABELS = {
   0: "Verified",

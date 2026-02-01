@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
+//API URL assumes the Express server is unchanged and locally hosted.
+//Can be changed depending on URL of Express server.
  const API_URL="http://localhost:3001";
 
+ //Gets the page types to be used for page context.
 function getPageType(pathname) {
     if (pathname.startsWith("/faq")) return "faq";
     if (pathname.startsWith("/admin")) return "admin";
@@ -14,6 +17,7 @@ function getPageType(pathname) {
     if (pathname.startsWith("/settings")) return "settings";
 }
 
+//This function uses the key information on the page to extract surface level content.
 function collectPageContext(location) {
     const h1 = document.querySelector("h1")?.textContent?.trim() || null;
 
@@ -26,9 +30,11 @@ function collectPageContext(location) {
     };
 }
 
+//Creates the actual widget itself.
 export default function ChatWidget() {
     const location = useLocation()
 
+    //Use states for if the chatbox is open, input, loading, and changing messages.
     const [open, setOpen] = useState(false);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -41,10 +47,12 @@ export default function ChatWidget() {
 
     const listRef = useRef(null);
 
+    //Scrolls as the conversation moves along.
     useEffect(() => {
         listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth"});
     }, [messages, open]);
 
+    //Quick chips are common questions to ask for a few pages.
     const quickChips = useMemo (() => {
         const pageType = getPageType(location.pathname);
         if (pageType === "faq") return ["What is rarity?", "How are items rated?", "What is this site about?"];
@@ -52,17 +60,24 @@ export default function ChatWidget() {
         return ["What is this site?", "How do I list an item?", "What is a collectible?"];
     }, [location.pathname]);
 
+    //THis method sends the message to the backend.
     async function sendMessage(text) {
+        //Trims the text. If the trimmed text contains nothing OR the bot is currently
+        //loading a response, simply return.
         const trimmed = text.trim();
         if (!trimmed || loading) return;
 
+        //Set the messages to the message and trimmed content.
         setMessages((m) => [...m, { role: "user", content: trimmed }]);
         setInput("");
         setLoading(true);
 
+        //Try except to send the message and receive response.
         try {
+            //Get page context of the current page.
             const pageContext = collectPageContext(location);
 
+            //Send POST request with the JSONified message
             const resp = await fetch(`${API_URL}/chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -73,13 +88,18 @@ export default function ChatWidget() {
                 }),
             });
 
+            //If the response is not ok, throw an error.
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            //Get the data as a JSON.
             const data = await resp.json();
 
+            //If the answer is null, return that a response couldn;t be generated.
             const answer = data?.answer || "Sorry, I was unable to generate a response...";
             const refused = !!data?.refused;
             const citations = Array.isArray(data?.citations) ? data.citations : [];
 
+            //Set messages along with adding the sources.
+            //If a refusal was reported, offer specific topics for the user to ask.
             setMessages((m) => [
                 ...m, 
                 {
@@ -92,6 +112,7 @@ export default function ChatWidget() {
                             (refused ? "\n\n(If you want, ask about a specfic term such as rarity)" : ""),
                 }
             ]);
+            //Catch any errors and report an issue to the user.
         } catch (e) {
             setMessages((m) => [
                 ...m,
@@ -101,10 +122,11 @@ export default function ChatWidget() {
                 }
             ]);
         } finally {
-            setLoading(false);
+            setLoading(false); //At the end of the block, set loading to false.
         }
     }
 
+    //uiverse open-source chatbox
     return (
         <>
             { /* Button */ }
