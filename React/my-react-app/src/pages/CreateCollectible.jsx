@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './CreateCollectible.css';
+import { addCollectible } from '../js/testTransaction.js';
 
 export default function CreateCollectible() {
   const categoryPool = ["Numismatics", "Fine Art", "Horology", "Vintage Tech", "Automobilia", "Jewelry", "First Editions", "Wine & Spirits"];
@@ -17,6 +18,9 @@ export default function CreateCollectible() {
 
   const [catSearch, setCatSearch] = useState('');
   const [tagSearch, setTagSearch] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [successTxHash, setSuccessTxHash] = useState(null);
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -35,6 +39,50 @@ export default function CreateCollectible() {
 
   const filteredCats = categoryPool.filter(c => c.toLowerCase().includes(catSearch.toLowerCase()));
   const filteredTags = tagPool.filter(t => t.toLowerCase().includes(tagSearch.toLowerCase()));
+
+  const handleImportToVault = async () => {
+    setError(null);
+    setSuccessTxHash(null);
+    if (!formData.name.trim()) {
+      setError('Collectible name is required.');
+      return;
+    }
+    if (!formData.description.trim()) {
+      setError('Description is required.');
+      return;
+    }
+    if (!formData.category) {
+      setError('Please select a category.');
+      return;
+    }
+    const categoryIndex = categoryPool.indexOf(formData.category);
+    const priceRaw = parseFloat(String(formData.value).replace(/[$,]/g, '').trim()) || 0;
+    const price = Math.round(priceRaw);
+    if (price < 0) {
+      setError('Valuation must be non-negative.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const tx = await addCollectible(
+        null,
+        formData.name.trim(),
+        formData.description.trim(),
+        categoryIndex,
+        0,
+        price
+      );
+      setSuccessTxHash(tx.hash);
+      setFormData({ name: '', description: '', year: '', value: '', category: '', tags: [], images: [] });
+    } catch (err) {
+      console.error(err);
+      setError(err?.message || err?.reason || 'Failed to add collectible.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const SEPOLIA_ETHERSCAN = 'https://sepolia.etherscan.io/tx';
 
   return (
     <div className="product-container h-full max-h-full overflow-hidden box-border bg-[#0a0a0a] text-white flex flex-row p-8 pb-8 gap-8">
@@ -159,11 +207,37 @@ export default function CreateCollectible() {
         </div>
 
         {/* FINAL ACTION: Bottom Right */}
-        <button className="w-full py-5 mt-4 border border-[var(--accent-color)] text-[var(--accent-color)] uppercase tracking-[0.5em] text-[10px] font-black hover:bg-[var(--accent-color)] hover:text-black transition-all shrink-0">
-          Import to Vault
+        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+        <button
+          type="button"
+          onClick={handleImportToVault}
+          disabled={isSubmitting}
+          className="w-full py-5 mt-4 border border-[var(--accent-color)] text-[var(--accent-color)] uppercase tracking-[0.5em] text-[10px] font-black hover:bg-[var(--accent-color)] hover:text-black transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? 'Submitting…' : 'Import to Vault'}
         </button>
       </aside>
 
+      {/* Success modal */}
+      {successTxHash && (
+        <div className="create-success-overlay" onClick={() => setSuccessTxHash(null)}>
+          <div className="create-success-modal" onClick={e => e.stopPropagation()}>
+            <h2 className="create-success-title">Collectible added to vault</h2>
+            <p className="create-success-text">Your transaction was confirmed.</p>
+            <a
+              href={`${SEPOLIA_ETHERSCAN}/${successTxHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="create-success-link"
+            >
+              View on Etherscan →
+            </a>
+            <button type="button" className="create-success-dismiss" onClick={() => setSuccessTxHash(null)}>
+              Done
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

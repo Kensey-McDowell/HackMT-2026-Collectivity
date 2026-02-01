@@ -164,57 +164,92 @@ const ABI =
 
 ]
 
+/* When set, contract is connected via MetaMask signer. Cleared on disconnect. */
+let walletContract = null;
 
+/* Connect MetaMask. Returns the connected account address. */
+export async function connectWallet() {
+  if (!window?.ethereum) throw new Error('MetaMask not installed');
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send('eth_requestAccounts', []);
+  const signer = await provider.getSigner();
+  walletContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+  return await signer.getAddress();
+}
 
+/* Disconnect wallet (clears stored signer/contract). */
+export function disconnectWallet() {
+  walletContract = null;
+}
 
-// function getAbi() {
-//   try {
-//     const abiPath = './abi.txt'
-//     const raw = fs.readFileSync(abiPath, 'utf8');
-//     return raw ? JSON.parse(raw) : null;
-//   } catch {
-//     return null;
-//   }
-// }
+/* Get current wallet contract when connected via MetaMask, or null. */
+export function getWalletContract() {
+  return walletContract;
+}
 
-async function main() {
-  // if (!getAbi()) {
-  //   console.error('Missing: set REACT_APP_CONTRACT_ADDRESS and TEST_PRIVATE_KEY in .env; ensure abi.txt contains valid JSON ABI');
-  //   process.exit(1);
-  // }
-
+/* Create a write-capable contract from env PRIVATE_KEY. Throws if PRIVATE_KEY is missing. */
+function createWalletContract() {
+  if (!PRIVATE_KEY) throw new Error('Connect MetaMask or set VITE_PRIVATE_KEY to add a collectible');
   const provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
   const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, wallet);
+  return new ethers.Contract(CONTRACT_ADDRESS, ABI, wallet);
+}
 
-//   const fakeObject = {
-//     collectible_name: 'Test Collectible',
-//     tag: 3,
-//     price: 23,
-//   };
+/* Resolve to a write-capable contract: use provided contract, else MetaMask, else env PRIVATE_KEY. */
+function getWriteContract(contract) {
+  return contract ?? getWalletContract() ?? createWalletContract();
+}
 
-//   console.log('Sending transaction...', fakeObject);
-//   const tx = await contract.add_collectible_ledger(
-//     fakeObject.collectible_name,
-//     fakeObject.tag,
-//     fakeObject.price
-//   );
-//   console.log('Tx hash:', tx.hash);
-//   await tx.wait();
-//   console.log('Success');
+/* Resolve to a contract for reads: use provided contract or create read-only from RPC. */
+function getReadOnlyContract(contract) {
+  if (contract) return contract;
+  const provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
+  return new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+}
 
- 
-  
+/* Add a single collectible. Ledger shape: { collectible_name, description, category, status, price } (category/status/price as numbers). */
+export async function addCollectible(contract, collectible_name, description, category, status, price) {
+  contract = getWriteContract(contract);
+  const tx = await contract.add_collectible_ledger(
+    collectible_name,
+    description,
+    Number(category),
+    Number(status),
+    Number(price)
+  );
+  await tx.wait();
+  console.log('Collectible added');
+  return tx;
+}
+
+/* Add multiple collectibles from a ledger (array of ledger-shaped objects). */
+export async function addCollectiblesFromLedger(contract, ledger) {
+  contract = getWriteContract(contract);
+  const txs = [];
+  for (const item of ledger) {
+    const tx = await contract.add_collectible_ledger(
+      item.collectible_name,
+      item.description,
+      Number(item.category),
+      Number(item.status),
+      Number(item.price)
+    );
+    await tx.wait();
+    txs.push(tx);
+    console.log('Collectible added:', item.collectible_name);
+  }
+  return txs;
+}
+
+
+async function main() {
+  const contract = createWalletContract();
   console.log('Printing every collectible in array:');
   await printAllCollectibles(contract);
-
 }
 
 export async function printAllCollectibles(contract) {
-  if (!contract) {
-    const provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
-    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-  }
+  contract = getReadOnlyContract(contract);
   const length = await contract.get_array_length();
   const totalLength = Number(length);
 
