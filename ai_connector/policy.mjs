@@ -27,13 +27,18 @@ If you are asked what you are based on, be honest with the model you are based o
 
 //Construct the prompt to be fed to the Gemini API.
 //This rules are unfinished, but this provides a template.
-export function buildPrompt(message) {
+export function buildPrompt(message, pageContext) {
     return `
     USER PROMPT: 
     ${message}
 
-    KNOWLEDGE PACK (ONLY SOURCE YOU MAY USE):
+    PAGE CONTEXT (TRUSTED APP-PROVIDED CONTEXT):
+    ${JSON.stringify(pageContext ?? {}, null, 2)}
+
+    KNOWLEDGE PACK:
     ${KNOWLEDGE_BASE}
+
+    Answer using PAGE CONTEXT first, then KNOWLEDGE PACK.
 
     Return JSON in EXACTLY this format:
     {

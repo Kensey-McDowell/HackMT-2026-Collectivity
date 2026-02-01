@@ -27,13 +27,13 @@ app.post("/chat", async(req, res) => {
     try {
         //Get the sessionId and message from the request body.
         //If missing, report an error
-        const { sessionId, message } = req.body || {};
+        const { sessionId, message, pageContext } = req.body || {};
         if (!sessionId || !message) {
             return res.status(400).json({ error: "sessionId and message are required..." });
         }
 
         const history = getSession(sessionId);
-        const prompt = buildPrompt(message);
+        const prompt = buildPrompt(message, pageContext);
 
         const response = await agent.models.generateContent({
             model: "gemini-2.5-flash",
