@@ -1,7 +1,7 @@
 import GavinPic from "../../assets/images/Gavin.png";
 import KenseyPic from "../../assets/images/Kensey.png";
 import ErikPic from "../../assets/images/Erik.png";
-import RileyPic from "../../assets/images/goofyahcat.png";
+import RileyPic from "../../assets/images/Riley.jpeg";
 import DevinPic from "../../assets/images/Devin.png";
 import VincentPic from "../../assets/images/Vincent.png";
 import VivianPic from "../../assets/images/Vivian.png";
@@ -12,7 +12,7 @@ import DrewPic from "../../assets/images/Drew.png";
 import TristenPic from "../../assets/images/Tristen.png";
 import JackPic from "../../assets/images/Jack.jpeg";
 
-import CatPic from "../../assets/images/goofyahcat.png";
+
 export const teamMembers = [
   {
     name: "Gavin Liles",

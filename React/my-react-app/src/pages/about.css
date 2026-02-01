@@ -238,3 +238,7 @@
   .about-slide-up-text { font-size: 2rem; }
   .about-container h1 { font-size: 2rem; }
 }
+
+.social-main-content-area {
+  overflow-y: auto !important;
+}
