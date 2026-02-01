@@ -39,25 +39,27 @@ export default function AboutPage() {
       <div className="about-card" id="mission">
         <h2>Our Mission</h2>
         <p>
-          We make buying and selling collectibles safe, transparent, and fun!
-          Every item is authenticated through our blockchain smart contract.
+          We make collecting safer and more enjoyable by removing uncertainty from every trade. 
+          Collectivity creates a space where buyers and sellers can interact with confidence instead of risk. 
+          Our goal is to turn collectibles into assets people trust, not transactions they worry about.
         </p>
       </div>
 
       <div className="about-card" id="technology">
         <h2>Our Technology</h2>
         <p>
-          Our platform connects to the blockchain to verify authenticity of each
-          collectible. The smart contract ensures all transactions are secure and
-          tamper-proof.
+          Collectivity runs on blockchain-backed verification to confirm each item’s authenticity. 
+          Smart contracts handle transactions automatically, preventing tampering and disputes. 
+          The result is a system that stays transparent without slowing users down.
         </p>
       </div>
 
       <div className="about-card" id="why-us">
         <h2>Why Choose Us?</h2>
         <p>
-          From rare Pokémon cards to limited-edition collectibles, we provide a
-          trustworthy marketplace.
+          Collectivity is built for collectors who value confidence as much as rarity. 
+          Whether you’re trading Pokémon cards or limited releases, our platform keeps the process simple and dependable. 
+          You focus on the collection — we handle the protection.
         </p>
       </div>
 
