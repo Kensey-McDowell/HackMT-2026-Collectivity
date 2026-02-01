@@ -27,8 +27,7 @@ function ThemedApp() {
         <Routes>
           <Route path="/intro" element={<IntroPage />} />
           <Route path="/registration" element={<RegistrationPage />} />
-          <Route path="/social" element={<SocialPage />} />
-          <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
+         
           <Route path="/profile" element={<ProfilePage />} />
 
           <Route element={<Layout />}>
@@ -39,6 +38,8 @@ function ThemedApp() {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/productpage" element={<ProductPage />} />
+             <Route path="/social" element={<SocialPage />} />
+          <Route path="/ProductPage/:itemIndex" element={<ProductPage />} />
             <Route path="/create" element={<CreateCollectible />} />
           </Route>
         </Routes>
