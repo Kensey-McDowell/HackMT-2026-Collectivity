@@ -10,23 +10,27 @@
   --shadow-color: rgba(0, 0, 0, 0.3);
 }
 
-body, html {
+html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  font-family: 'Playfair Display', serif;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
+  overflow-y: auto !important; 
+  height: auto !important;     
+}
+
+.intro-container-isolated {
+  width: 100%;
+  min-height: 100vh; 
+  display: block;
+  overflow: visible !important; 
+  position: relative;
 }
 
 .master-container {
   width: 100%;
-  height: 100vh;
-  position: relative;
-  overflow: hidden;
+  background-color: var(--bg-color); 
 }
 
-/* --- CINEMATIC OVERLAYS --- */
 .vignette {
   position: fixed;
   inset: 0;
@@ -60,13 +64,13 @@ body, html {
 .nav-logo {
   letter-spacing: 0.4em;
   font-weight: bold;
-  color: var(--text-main);
+  color: var(--text-color);
 }
 
 .skip-btn {
   background: transparent;
   border: 1px solid rgba(197, 163, 103, 0.4);
-  color: var(--accent-gold);
+  color: var(--accent-color);
   padding: 8px 16px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -76,7 +80,7 @@ body, html {
 }
 
 .skip-btn:hover {
-  background: var(--accent-gold);
+  background: var(--accent-color);
   color: var(--bg-color);
 }
 
@@ -84,18 +88,14 @@ body, html {
 .scene {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  will-change: transform, opacity;
-}
-
-.lottie-wrapper {
-  width: 45%;
-  max-width: 450px;
-  filter: sepia(0.2) brightness(1.1) drop-shadow(0 0 40px rgba(197, 163, 103, 0.2));
-  z-index: 5;
+  background-color: var(--bg-color); /* Ensure scenes are opaque */
+  overflow: hidden;
 }
 
 .globe-adjuster {
@@ -110,54 +110,53 @@ body, html {
 
 .tagline {
   font-size: clamp(1.2rem, 3vw, 2.5rem);
+  font-family: 'Playfair Display', serif;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--text-main);
-  text-shadow: 0 5px 15px rgba(0,0,0,0.8);
+  color: var(--text-color);
+  text-shadow: 0 5px 25px rgba(0,0,0,0.8);
 }
 
 #image-track-scene {
   background: radial-gradient(circle, #1a1614 0%, #0a0908 100%);
-  overflow: hidden;
+  z-index: 10;
 }
 
 #image-track {
   display: flex;
-  gap: 80px; 
+  gap: 5px;
   padding: 0 10vw;
   align-items: center;
+  width: max-content;        
+  will-change: transform;    
 }
 
+
 .image-frame {
-  flex-shrink: 0;
-  width: 45vmin;  /* Fixed frame width */
-  height: 65vmin; /* Fixed frame height */
-  padding: 15px;
-  background: #141210;
-  border: 1px solid rgba(197, 163, 103, 0.1);
-  overflow: hidden; /* This is vital: it clips the 'moving' image inside */
+  width: 35vmin;          /* skinny slice */
+  height: 56vmin;         /* same height as before */
+  overflow: hidden;       /* crop the image */
   position: relative;
+  will-change: transform;
 }
 
 .image {
-  width: 100%;
+  width: auto;
   height: 100%;
   object-fit: cover;
-  /* ZOOM: Increase this to 1.5x or 1.8x to make the parallax much more obvious */
-  transform: scale(1.6); 
-  will-change: object-position;
-  pointer-events: none;
+  transform: translateX(-20%); /* shift the visible slice */
 }
+
 
 .final-scene {
-  /* Ensure the final scene is centered and stays on top */
-  z-index: 100;
-  pointer-events: all;
+  z-index: 300;
+  position: absolute; /* Changed from relative to absolute */
+  inset: 0;
+  pointer-events: none; /* Will be toggled to 'all' by GSAP */
+  background-color: var(--bg-color);
 }
 
-/* --- Keep your dramatic hero-title styles --- */
 .hero-title {
-  /* Ensure this has the shine animation and clamp size from previous message */
   font-size: clamp(3rem, 10vw, 7rem);
   letter-spacing: .4em;
   margin: center;
@@ -166,6 +165,7 @@ body, html {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shine 6s linear infinite;
+  will-change: background-position;
 }
 
 @keyframes shine {
@@ -175,14 +175,14 @@ body, html {
 .sub-hero {
   letter-spacing: 0.8em;
   font-size: 0.8rem;
-  color: var(--accent-gold);
+  color: var(--accent-color);
   margin-bottom: 3rem;
   opacity: 0.8;
 }
 
 .btn-warm {
   padding: 1rem 2.5rem;
-  background: var(--accent-gold);
+  background: var(--accent-color);
   border: none;
   font-weight: bold;
   letter-spacing: 0.2em;
@@ -193,8 +193,8 @@ body, html {
 
 .btn-warm.outline {
   background: transparent;
-  border: 1px solid var(--accent-gold);
-  color: var(--accent-gold);
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
 }
 
 .scene-1 {
@@ -209,8 +209,8 @@ body, html {
   left: 0;
   width: 100vw;
   height: 100vh;
-  pointer-events: none; /* Allows scrolling through the canvas */
   z-index: 0;
+  pointer-events: none;
 }
 
 .canvas-wrapper {
@@ -224,12 +224,20 @@ body, html {
 
 /* Ensure scenes have height and relative positioning for the Views */
 .scene {
-  position: absolute;
+  position: absolute; /* Stacked for GSAP crossfading */
   top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  overflow: hidden;
+  z-index: 1;
+}
+
+.view-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 canvas {
