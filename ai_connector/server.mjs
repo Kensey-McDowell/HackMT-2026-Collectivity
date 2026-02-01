@@ -8,6 +8,7 @@ import { agent } from "./gemini.mjs";
 import { SYS_POLICY, buildPrompt } from "./policy.mjs";
 import { getSession, appendToSession } from "./sessions.mjs";
 import cors from "cors";
+import { scrapeUrlToText } from "./scraper.mjs";
 
 //Create the Express app.
 //Maximum JSON body size is 1mb.

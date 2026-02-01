@@ -146,6 +146,15 @@ export default function Layout() {
                     >
                       Settings
                     </button>
+                    <button
+                      className="account-item"
+                      onClick={() => {
+                        setOpen(false);
+                        navigate("/about");
+                      }}
+                    >
+                      About
+                    </button>
 
                     {/* ✅ ADMIN (ONLY IF ROLE === ADMIN) */}
                     {isAdmin && (
@@ -153,7 +162,7 @@ export default function Layout() {
                         className="account-item"
                         onClick={() => {
                           setOpen(false);
-                          window.open('http://127.0.0.1:8090/_/', '_blank');
+                          navigate("/admin");
                         }}
                       >
                         Admin Panel
