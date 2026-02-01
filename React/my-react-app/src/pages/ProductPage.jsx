@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import pb from '../lib/pocketbase';
 import './ProductPage.css';
+// Adding Recharts for the analytics tab
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const PB_COLLECTABLES = 'collectables';
 const PB_LOGS = 'activity_ledger';
-// Ensure this matches your PocketBase collection name exactly (usually lowercase)
-const PB_ANALYTICS = 'user_analytics';
-
 
 const STATUS_LABELS = {
   0: "Verified",
@@ -23,116 +22,99 @@ export default function ProductPage() {
   const [productImageUrl, setProductImageUrl] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('history'); // 'history', 'analytics', or 'tags'
 
-  const currentUser = pb.authStore.model;
   const statusLabel = STATUS_LABELS[product?.status] || "Verified";
   const categoryLabel = product?.expand?.category?.name || "Uncategorized";
 
-  const handleTagClick = (tagLabel) => {
-    navigate('/social', { state: { filterTag: tagLabel } });
-  };
+  // --- DYNAMIC CHART LOGIC ---
+  const chartData = useMemo(() => {
+    return transactions
+      .filter(log => log.action?.toLowerCase().includes('price') || log.action?.toLowerCase().includes('value'))
+      .map(log => {
+        const effectiveDate = log.event_date ? new Date(log.event_date) : new Date(log.created);
+        return {
+          date: effectiveDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+          year: effectiveDate.getFullYear(),
+          price: parseFloat(log.new_value.replace(/[^0-9.]/g, '')),
+          fullDate: effectiveDate
+        };
+      })
+      .sort((a, b) => a.fullDate - b.fullDate);
+  }, [transactions]);
 
-  const updateRecentHistory = (id) => {
-    try {
-      const stored = localStorage.getItem('recent_views');
-      const existing = stored ? JSON.parse(stored) : [];
-      const updated = [id, ...existing.filter(item => item !== id)].slice(0, 3);
-      localStorage.setItem('recent_views', JSON.stringify(updated));
-    } catch (err) {
-      console.error("Local history error:", err);
+  // --- TAG EVOLUTION LOGIC ---
+  const tagEvolution = useMemo(() => {
+    const added = transactions.filter(log => log.action?.toLowerCase().includes('tag added'));
+    const removed = transactions.filter(log => log.action?.toLowerCase().includes('tag removed'));
+    return { 
+      added, 
+      removed, 
+      hasChanges: added.length > 0 || removed.length > 0 
+    };
+  }, [transactions]);
+
+  // --- CALCULATE PERFORMANCE METRICS ---
+  const marketStats = useMemo(() => {
+    if (chartData.length < 2) return null;
+    const now = new Date();
+    const thirtyDaysAgo = new Date().setDate(now.getDate() - 30);
+    const startPrice = chartData[0].price;
+    const currentPrice = chartData[chartData.length - 1].price;
+    const allTimeDiff = currentPrice - startPrice;
+    const allTimePercent = ((allTimeDiff / startPrice) * 100).toFixed(2);
+    const logsWithin30 = chartData.filter(d => d.fullDate >= thirtyDaysAgo);
+    let monthlyPercent = "0.00";
+    let isMonthlyPositive = true;
+    if (logsWithin30.length >= 2) {
+      const monthStart = logsWithin30[0].price;
+      const monthDiff = currentPrice - monthStart;
+      monthlyPercent = ((monthDiff / monthStart) * 100).toFixed(2);
+      isMonthlyPositive = monthDiff >= 0;
     }
-  };
+    const timeSpan = `${chartData[0].date} ${chartData[0].year} — ${chartData[chartData.length - 1].date} ${chartData[chartData.length - 1].year}`;
+    return {
+      allTimePercent,
+      isAllTimePositive: allTimeDiff >= 0,
+      monthlyPercent,
+      isMonthlyPositive,
+      timeSpan,
+      allTimeDiff: allTimeDiff.toLocaleString()
+    };
+  }, [chartData]);
 
-  /**
-   * GLOBAL ANALYTICS TRACKER
-   * Stores interest_name directly to bypass expansion issues
-   */
-  const trackEngagement = async (categoryId, categoryName, tags = []) => {
-    if (!currentUser) return;
-
-    // Build entries with ID and Name
-    const entries = [];
-    if (categoryId) {
-      entries.push({ id: categoryId, name: categoryName, type: 'category' });
-    }
-    
-    (tags || []).forEach(tag => {
-      if (tag.id) entries.push({ id: tag.id, name: tag.name, type: 'tag' });
-    });
-
-    for (const item of entries) {
-      if (!item.id || typeof item.id !== 'string') continue;
-
-      try {
-        const existing = await pb.collection(PB_ANALYTICS).getFirstListItem(
-          `user = "${currentUser.id}" && interest_id = "${item.id}"`,
-          { $autoCancel: false }
-        );
-
-        await pb.collection(PB_ANALYTICS).update(existing.id, {
-          view_count: (existing.view_count || 0) + 1,
-          interest_name: item.name // Keep name updated
-        });
-
-      } catch (err) {
-        if (err.status === 404) {
-          await pb.collection(PB_ANALYTICS).create({
-            user: currentUser.id,
-            interest_id: item.id,
-            interest_name: item.name, // Save the name here
-            type: item.type,
-            view_count: 1
-          }, { $autoCancel: false });
-        }
-      }
-    }
-  };
+  const hasPriceHistory = chartData.length > 1;
 
   useEffect(() => {
     window.scrollTo(0, 0);
     async function loadProduct() {
       if (!itemIndex) return;
-      
       try {
         setIsLoading(true);
         const record = await pb.collection(PB_COLLECTABLES).getOne(itemIndex, {
           expand: 'category,tags,created_by',
           $autoCancel: false 
         });
-
         const logs = await pb.collection(PB_LOGS).getFullList({
           filter: `collectible_id = "${itemIndex}"`,
           sort: '-created',
           expand: 'changed_by',
           $autoCancel: false
         });
-
         setProduct({
           ...record,
           collectible_name: record.name,
           price: record.estimated_value,
-          ownership: record.expand?.created_by?.name || record.expand?.created_by?.email || "Unknown Owner",
+          ownerId: record.expand?.created_by?.id,
+          ownership: record.expand?.created_by?.name || record.expand?.created_by?.username || "Unknown Owner",
           displayTags: record.expand?.tags || []
         });
         setTransactions(logs);
-
-        updateRecentHistory(itemIndex);
-        
-        // Pass names to the tracker
-        trackEngagement(
-          record.category, 
-          record.expand?.category?.name || "Unknown Category", 
-          record.expand?.tags || []
-        );
-
         if (record.images?.length) {
           setProductImageUrl(pb.files.getURL(record, record.images[0]));
         }
       } catch (err) {
-        if (!err.isAbort) {
-          console.error("Vault access failed:", err);
-          setProduct(null);
-        }
+        console.error("Vault access failed:", err);
       } finally {
         setIsLoading(false);
       }
@@ -179,7 +161,16 @@ export default function ProductPage() {
           <div className="tech-row border-b-0">
             <div className="flex flex-col">
               <span className="label-gold-dim">Owner</span>
-              <span className="tech-value">{product.ownership}</span>
+              {product.ownerId ? (
+                <Link 
+                  to={`/profile/${product.ownerId}`} 
+                  className="tech-value hover:text-[var(--accent-color)] transition-colors cursor-pointer"
+                >
+                  {product.ownership}
+                </Link>
+              ) : (
+                <span className="tech-value">{product.ownership}</span>
+              )}
             </div>
           </div>
         </div>
@@ -197,13 +188,7 @@ export default function ProductPage() {
               <span className="label-gold">Tags</span>
               <div className="tag-cloud-inline">
                 {product.displayTags.map((tagRecord) => (
-                  <button 
-                    key={tagRecord.id} 
-                    onClick={() => handleTagClick(tagRecord.name)}
-                    className="tag-item transform transition-transform duration-300 hover:scale-110"
-                  >
-                    {tagRecord.name}
-                  </button>
+                  <button key={tagRecord.id} className="tag-item">{tagRecord.name}</button>
                 ))}
               </div>
             </div>
@@ -212,51 +197,136 @@ export default function ProductPage() {
 
         <div className="description-box">
           <span className="label-gold block mb-2">Item Description</span>
-          <p className="description-text">
-            {product.description || "No description provided for this asset."}
-          </p>
+          <p className="description-text">{product.description || "No description provided."}</p>
         </div>
 
         <div className="history-section mt-8">
-          <span className="label-gold mb-4 block">Transaction History</span>
-          <div className="history-scroll-container border-t border-white/10 pt-2">
-            {transactions.length > 0 ? (
-              transactions.map((log) => (
-                <div key={log.id} className="history-row flex justify-between border-b border-white/5 py-4 last:border-0">
+          <div className="flex gap-8 mb-4 border-b border-white/10">
+            <button 
+              onClick={() => setActiveTab('history')}
+              className={`pb-2 text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${activeTab === 'history' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)]' : 'opacity-40'}`}
+            >
+              Transaction Ledger
+            </button>
+            
+            {hasPriceHistory && (
+              <button 
+                onClick={() => setActiveTab('analytics')}
+                className={`pb-2 text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${activeTab === 'analytics' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)]' : 'opacity-40'}`}
+              >
+                Market Analytics
+              </button>
+            )}
+
+            {tagEvolution.hasChanges && (
+              <button 
+                onClick={() => setActiveTab('tags')}
+                className={`pb-2 text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${activeTab === 'tags' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)]' : 'opacity-40'}`}
+              >
+                Tag Evolution
+              </button>
+            )}
+          </div>
+
+          <div className="history-scroll-container">
+            {activeTab === 'history' && (
+              transactions.length > 0 ? (
+                transactions.map((log) => (
+                  <div key={log.id} className="history-row flex justify-between border-b border-white/5 py-4 last:border-0">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--accent-color)]">{log.action}</span>
+                      <span className="text-[11px] opacity-70">
+                        <span className="opacity-40">{log.previous_value}</span>
+                        <span className="mx-2 text-[var(--accent-color)]">→</span>
+                        <span className="text-white">{log.new_value}</span>
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col justify-center">
+                      <span className="text-[10px] opacity-40 font-mono">
+                        {new Date(log.event_date || log.created).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="history-row flex justify-between py-4">
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent-color)]">Genesis Entry</span>
+                   <span className="text-[10px] opacity-40 font-mono">{new Date(product.created).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</span>
+                </div>
+              )
+            )}
+
+            {activeTab === 'analytics' && (
+              <div className="w-full pt-4">
+                <div className="flex justify-between items-start mb-8 border-l-2 border-[var(--accent-color)] pl-6">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--accent-color)]">
-                      {log.action}
-                    </span>
-                    <span className="text-[11px] opacity-70">
-                      <span className="opacity-40">{log.previous_value}</span>
-                      <span className="mx-2 text-[var(--accent-color)]">→</span>
-                      <span className="text-white">{log.new_value}</span>
-                    </span>
-                    <span className="text-[9px] opacity-30 font-mono uppercase tracking-tighter">
-                      Auth: {log.expand?.changed_by?.name || log.expand?.changed_by?.username || "System_Node"}
-                    </span>
+                    <span className="text-[9px] uppercase tracking-[0.4em] opacity-40">Valuation Window</span>
+                    <span className="text-[13px] font-mono tracking-widest text-white">{marketStats?.timeSpan}</span>
                   </div>
-                  <div className="text-right flex flex-col justify-center">
-                    <span className="text-[10px] opacity-40 font-mono">
-                      {new Date(log.created).toLocaleDateString('en-GB', {
-                        day: '2-digit', month: 'short', year: 'numeric'
-                      }).toUpperCase()}
-                    </span>
+                  <div className="flex gap-12">
+                    <div className="text-right flex flex-col">
+                      <span className="text-[9px] uppercase tracking-[0.4em] opacity-40 mb-1">Last 30 Days</span>
+                      <span className={`text-[15px] font-bold ${marketStats?.isMonthlyPositive ? 'text-green-400' : 'text-red-400'}`}>
+                        {marketStats?.isMonthlyPositive ? '+' : ''}{marketStats?.monthlyPercent}%
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[9px] uppercase tracking-[0.4em] opacity-40 mb-1">All-Time Yield</span>
+                      <span className={`text-[18px] font-bold tracking-tighter ${marketStats?.isAllTimePositive ? 'text-green-400' : 'text-red-400'}`}>
+                        {marketStats?.isAllTimePositive ? '▲' : '▼'} {marketStats?.allTimePercent}%
+                        <span className="ml-2 opacity-30 text-[10px] font-normal text-white">(${marketStats?.allTimeDiff})</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="history-row flex justify-between py-4">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent-color)]">Genesis Entry</span>
-                  <span className="text-[10px] opacity-40 font-mono">Initial Vaulting by {product.ownership}</span>
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                      <XAxis dataKey="date" stroke="rgba(255,255,255,0.2)" fontSize={9} tickLine={false} axisLine={false} dy={10} />
+                      <YAxis stroke="rgba(255,255,255,0.2)" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                      <Tooltip contentStyle={{ backgroundColor: '#111', border: '1px solid #c5a367', borderRadius: '0px', fontSize: '10px' }} itemStyle={{ color: '#c5a367' }} />
+                      <Line type="monotone" dataKey="price" stroke="#c5a367" strokeWidth={2} dot={{ r: 3, fill: '#0a0908', stroke: '#c5a367', strokeWidth: 2 }} activeDot={{ r: 5 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] opacity-40 font-mono">
-                    {new Date(product.created).toLocaleDateString('en-GB', {
-                      day: '2-digit', month: 'short', year: 'numeric'
-                    }).toUpperCase()}
-                  </span>
+              </div>
+            )}
+
+            {activeTab === 'tags' && (
+              <div className="w-full h-full flex pt-4">
+                <div className="flex-1 border-r border-white/5 pr-4">
+                  <header className="flex flex-col mb-6">
+                    <span className="text-[9px] uppercase tracking-[0.4em] text-red-400/60 mb-1">Redacted Markers</span>
+                    <span className="text-[12px] font-mono tracking-widest text-white">Removed</span>
+                  </header>
+                  <div className="flex flex-col gap-4">
+                    {tagEvolution.removed.length > 0 ? tagEvolution.removed.map(log => (
+                      <div key={log.id} className="flex justify-between items-center opacity-60">
+                        <span className="tag-item line-through border-red-900/40 text-red-200/50">{log.new_value}</span>
+                        <span className="text-[8px] font-mono opacity-40">{new Date(log.event_date || log.created).getFullYear()}</span>
+                      </div>
+                    )) : (
+                      <span className="text-[9px] uppercase tracking-widest opacity-20">No Historical Redactions</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex-1 pl-8">
+                  <header className="flex flex-col mb-6">
+                    <span className="text-[9px] uppercase tracking-[0.4em] text-green-400/60 mb-1">Post-Creation Associations</span>
+                    <span className="text-[12px] font-mono tracking-widest text-white">Added</span>
+                  </header>
+                  <div className="flex flex-col gap-4">
+                    {tagEvolution.added.length > 0 ? tagEvolution.added.map(log => (
+                      <div key={log.id} className="flex justify-between items-center">
+                        <span className="tag-item border-green-900/40 text-green-200/80">{log.new_value}</span>
+                        <span className="text-[8px] font-mono opacity-40">{new Date(log.event_date || log.created).getFullYear()}</span>
+                      </div>
+                    )) : (
+                      <span className="text-[9px] uppercase tracking-widest opacity-20">No Post-Creation Tags</span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

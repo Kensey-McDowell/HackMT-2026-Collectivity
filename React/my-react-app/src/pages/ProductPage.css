@@ -196,3 +196,20 @@
 
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--accent-color); }
+.history-section {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  overflow: hidden; 
+  min-height: 350px; /* Added to keep height consistent */
+}
+
+/* Customizing Recharts tooltip fonts to match your theme */
+.recharts-tooltip-label {
+  color: var(--text-color) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
