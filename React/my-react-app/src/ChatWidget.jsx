@@ -129,10 +129,20 @@ export default function ChatWidget() {
     //uiverse open-source chatbox
     return (
         <>
-            { /* Button */ }
+            {/* Button */}
             <button
                 onClick={() => setOpen((v) => !v)}
-                className="fixed bottom-6 right-6 z-50 rounded-full bg-blue-600 text-white px-4 py-3 shadow-lg hover:bg-blue-700 transition"
+                className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg transition transform hover:scale-105"
+                style={{ 
+                    backgroundColor: 'var(--accent-color)', 
+                    color: 'var(--bg-color)',
+                    padding: '12px 24px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: 'pointer'
+                }}
                 aria-label="Open chat"
             >
                 {open ? "Close" : "Chat"}
@@ -141,90 +151,126 @@ export default function ChatWidget() {
             {/* Panel */}
             {open && (
             <div className="fixed bottom-20 right-6 z-50 w-[360px] max-w-[92vw]">
-                <div className="max-w-md mx-auto bg-white dark:bg-zinc-800 shadow-md rounded-lg overflow-hidden">
+                <div 
+                    className="max-w-md mx-auto shadow-xl rounded-lg overflow-hidden border"
+                    style={{ 
+                        backgroundColor: 'var(--secondary-bg)', 
+                        borderColor: 'var(--border-color)' 
+                    }}
+                >
                 <div className="flex flex-col h-[400px]">
                     {/* Header */}
-                    <div className="px-4 py-3 border-b dark:border-zinc-700">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-semibold text-zinc-800 dark:text-white">
-                        Collector Helper
-                        </h2>
-                        <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                        Online
+                    <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-lg font-semibold" style={{ color: 'var(--text-color)' }}>
+                                Collector Helper
+                            </h2>
+                            <div 
+                                className="text-[10px] px-2 py-1 rounded-full uppercase tracking-widest font-bold"
+                                style={{ backgroundColor: 'var(--accent-color)', color: 'var(--bg-color)' }}
+                            >
+                                Online
+                            </div>
                         </div>
-                    </div>
                     </div>
 
                     {/* Messages */}
                     <div
-                    ref={listRef}
-                    className="flex-1 p-3 overflow-y-auto flex flex-col space-y-2"
+                        ref={listRef}
+                        className="flex-1 p-3 overflow-y-auto flex flex-col space-y-2"
                     >
-                    {messages.map((m, idx) => (
-                        <div
-                        key={idx}
-                        className={[
-                            "chat-message max-w-xs rounded-lg px-3 py-1.5 text-sm whitespace-pre-wrap",
-                            m.role === "user"
-                            ? "self-end bg-blue-500 text-white"
-                            : "self-start bg-zinc-500 text-white",
-                        ].join(" ")}
-                        >
-                        {m.content}
-                        </div>
-                    ))}
+                        {messages.map((m, idx) => (
+                            <div
+                                key={idx}
+                                className={`max-w-[85%] rounded-lg px-3 py-1.5 text-sm whitespace-pre-wrap ${
+                                    m.role === "user" ? "self-end" : "self-start"
+                                }`}
+                                style={{
+                                    backgroundColor: m.role === "user" ? 'var(--accent-color)' : 'var(--bg-color)',
+                                    color: m.role === "user" ? 'var(--bg-color)' : 'var(--text-color)',
+                                    border: m.role === "user" ? 'none' : `1px solid var(--border-color)`
+                                }}
+                            >
+                                {m.content}
+                            </div>
+                        ))}
 
-                    {loading && (
-                        <div className="chat-message self-start bg-zinc-500 text-white max-w-xs rounded-lg px-3 py-1.5 text-sm">
-                        Thinking...
-                        </div>
-                    )}
+                        {loading && (
+                            <div 
+                                className="self-start max-w-xs rounded-lg px-3 py-1.5 text-sm italic"
+                                style={{ color: 'var(--sceondary-accent)' }}
+                            >
+                                Thinking...
+                            </div>
+                        )}
                     </div>
 
-                    {/* (Optional) Quick chips styled a bit */}
+                    {/* Quick Chips */}
                     <div className="px-3 pb-2 flex flex-wrap gap-2">
-                    {quickChips.map((chip) => (
-                        <button
-                        key={chip}
-                        onClick={() => sendMessage(chip)}
-                        disabled={loading}
-                        className="text-xs px-3 py-1 rounded-full border border-zinc-200 dark:border-zinc-600
-                                    hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-50
-                                    text-zinc-700 dark:text-zinc-100"
-                        >
-                        {chip}
-                        </button>
-                    ))}
+                        {quickChips.map((chip) => (
+                            <button
+                                key={chip}
+                                onClick={() => sendMessage(chip)}
+                                disabled={loading}
+                                className="text-[10px] px-3 py-1 rounded-full border transition-all"
+                                style={{ 
+                                    borderColor: 'var(--accent-color)', 
+                                    color: 'var(--accent-color)',
+                                    backgroundColor: 'transparent',
+                                    cursor: 'pointer'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.target.style.backgroundColor = 'var(--accent-color)';
+                                    e.target.style.color = 'var(--bg-color)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.target.style.backgroundColor = 'transparent';
+                                    e.target.style.color = 'var(--accent-color)';
+                                }}
+                            >
+                                {chip}
+                            </button>
+                        ))}
                     </div>
 
-                    {/* Input */}
-                    <div className="px-3 py-2 border-t dark:border-zinc-700">
-                    <div className="flex gap-2">
-                        <input
-                        placeholder="Type your message..."
-                        className="flex-1 p-2 border rounded-lg dark:bg-zinc-700 dark:text-white dark:border-zinc-600 text-sm"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") sendMessage(input);
-                        }}
-                        disabled={loading}
-                        type="text"
-                        />
-                        <button
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-lg transition duration-300 ease-in-out text-sm disabled:opacity-50"
-                        onClick={() => sendMessage(input)}
-                        disabled={loading}
-                        >
-                        Send
-                        </button>
-                    </div>
+                    {/* Input Area */}
+                    <div className="px-3 py-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                        <div className="flex gap-2">
+                            <input
+                                placeholder="Type your message..."
+                                className="flex-1 p-2 rounded-md text-sm outline-none"
+                                style={{ 
+                                    backgroundColor: 'var(--bg-color)', 
+                                    color: 'var(--text-color)',
+                                    border: `1px solid var(--border-color)`
+                                }}
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") sendMessage(input);
+                                }}
+                                disabled={loading}
+                                type="text"
+                            />
+                            <button
+                                className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-widest transition-opacity"
+                                style={{ 
+                                    backgroundColor: 'var(--accent-color)', 
+                                    color: 'var(--bg-color)',
+                                    border: 'none',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => sendMessage(input)}
+                                disabled={loading}
+                            >
+                                Send
+                            </button>
+                        </div>
                     </div>
                 </div>
                 </div>
             </div>
             )}
-
         </>
     );
 }

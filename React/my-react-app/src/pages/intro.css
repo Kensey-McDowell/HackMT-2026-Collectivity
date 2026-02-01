@@ -243,3 +243,25 @@ html, body {
 canvas {
   touch-action: none; /* Prevents touch conflicts with scrolling */
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7); /* Dims the background */
+  display: flex;
+  align-items: center;     /* Centers vertically */
+  justify-content: center;  /* Centers horizontally */
+  z-index: 9999;           /* Ensures it stays above GSAP layers */
+}
+
+.modal-card {
+  background: #1a1a1a;     /* Match your dark theme */
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  position: relative;      /* Keeps it from floating away */
+}

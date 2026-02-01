@@ -5,7 +5,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useNavigate } from "react-router-dom";
-import Modal from "../components/Modal";
+import Modal from "../components/Modal"; 
+import LoginForm from "./LoginForm";
 import Book from "../assets/book";
 import Chain from "../assets/chain";
 import "./intro.css";
@@ -37,13 +38,19 @@ function CanvasWrapper({ children, ...props }) {
   );
 }
 
-export default function Home() {
+export default function IntroPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef(null);
   const trackRef = useRef(null);
   const scrollRef = useRef(0);
   const navigate = useNavigate();
 
   const [activeScene, setActiveScene] = useState(1);
+
+  const handleLoginSuccess = () => {
+    setIsModalOpen(false); 
+    navigate("/social");   
+  };
 
   const handleNavigation = (path) => {
     ScrollTrigger.getAll().forEach((t) => t.kill());
@@ -107,11 +114,10 @@ export default function Home() {
         .to("#image-track-scene", { autoAlpha: 1, pointerEvents: "all", duration: 2 }, "<")
         .to(".unique-text-overlay", { autoAlpha: 1, y: 0, duration: 1 });
 
-      // ⭐ PARALLAX IMAGE TRACK ⭐
+      
       images.forEach((_, i) => {
-        const depth = i * 0.12; // deeper = slower
+        const depth = i * 0.12; 
 
-        // FRAME PARALLAX (outer movement)
         tl.fromTo(
           `.image-frame:nth-child(${i + 1})`,
           { x: 100 * (1 + depth) + "vw" },
@@ -119,7 +125,6 @@ export default function Home() {
           "imagesStart"
         );
 
-        // INTERNAL IMAGE DRIFT (inner movement)
         tl.to(
           `.image-frame:nth-child(${i + 1}) .image`,
           {
@@ -131,10 +136,8 @@ export default function Home() {
         );
       });
 
-      // TEXT FADE OUT
       tl.to(".unique-text-overlay", { autoAlpha: 0, y: -20, duration: 1 }, "-=6.5")
 
-        // FADE OUT TRACK
         .to("#image-track-scene", { autoAlpha: 0, duration: 1.5 }, "<")
 
         .addLabel("finalStart")
@@ -210,7 +213,7 @@ export default function Home() {
         <h1 className="hero-title">COLLECTIVITY</h1>
         <p className="sub-hero">COLLECT. CONNECT. CHERISH.</p>
         <div className="auth-group">
-          <button className="btn-warm" onClick={() => handleNavigation("/registration")}>
+          <button className="btn-warm" onClick={() => setIsModalOpen(true)}>
             Sign In
           </button>
           <button className="btn-warm outline" onClick={() => handleNavigation("/social")}>
@@ -218,6 +221,15 @@ export default function Home() {
           </button>
         </div>
       </section>
+      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <LoginForm 
+          onSuccess={handleLoginSuccess} 
+          onSwitch={() => {
+            setIsModalOpen(false);
+            navigate("/registration");
+          }} 
+        />
+      </Modal>
     </div>
   );
 }
